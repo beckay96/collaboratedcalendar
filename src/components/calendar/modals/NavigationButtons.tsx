@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 interface NavigationButtonsProps {
   itemType?: string;
@@ -17,19 +18,45 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
 }) => {
   const navigate = useNavigate();
 
-  const navigateToAssistant = () => {
+  const navigateToAssistant = async () => {
     if (itemType === 'lesson' && originalId) {
-      console.log('Navigating to Assignment Assistant for lesson:', originalId);
-      navigate(`/assignment-assistant/${originalId}`);
-      onClose();
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const authToken = session?.access_token || '';
+        const userId = session?.user?.id || '';
+        
+        console.log('Navigating to Assignment Assistant for lesson:', originalId);
+        
+        // Navigate with auth data in URL params
+        navigate(`/assignment-assistant/${originalId}?auth_token=${authToken}&user_id=${userId}`);
+        onClose();
+      } catch (error) {
+        console.error('Error getting auth data:', error);
+        // Fallback to basic navigation if auth fails
+        navigate(`/assignment-assistant/${originalId}`);
+        onClose();
+      }
     }
   };
 
-  const navigateToClassCompass = () => {
+  const navigateToClassCompass = async () => {
     if (itemType === 'class_plan' && originalId) {
-      console.log('Navigating to Class Compass for class plan:', originalId);
-      navigate(`/class-compass/${originalId}`);
-      onClose();
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const authToken = session?.access_token || '';
+        const userId = session?.user?.id || '';
+        
+        console.log('Navigating to Class Compass for class plan:', originalId);
+        
+        // Navigate with auth data in URL params
+        navigate(`/class-compass/${originalId}?auth_token=${authToken}&user_id=${userId}`);
+        onClose();
+      } catch (error) {
+        console.error('Error getting auth data:', error);
+        // Fallback to basic navigation if auth fails
+        navigate(`/class-compass/${originalId}`);
+        onClose();
+      }
     }
   };
 
