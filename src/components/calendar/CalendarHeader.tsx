@@ -1,9 +1,12 @@
+
 import React from 'react';
 import { format, addDays, subDays } from 'date-fns';
-import { CalendarIcon, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
+import { CalendarIcon, ChevronLeft, ChevronRight, RefreshCw, CalendarDays } from 'lucide-react';
 import { useCalendar } from '@/context/CalendarContext';
 import { getFormattedMonthYear, getNextMonth, getPreviousMonth } from '@/utils/calendar-utils';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+
 interface CalendarHeaderProps {
   onToggleView: () => void;
 }
@@ -19,6 +22,7 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
     refreshCalendar,
     loading
   } = useCalendar();
+  
   const handlePrevious = () => {
     if (viewType === 'month') {
       setCurrentDate(getPreviousMonth(currentDate));
@@ -27,6 +31,7 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
       setSelectedDate(prevDay);
     }
   };
+  
   const handleNext = () => {
     if (viewType === 'month') {
       setCurrentDate(getNextMonth(currentDate));
@@ -35,12 +40,25 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
       setSelectedDate(nextDay);
     }
   };
+  
   const handleRefresh = async () => {
     toast.info("Refreshing calendar data...");
     await refreshCalendar();
     toast.success("Calendar refreshed");
   };
+
+  const handleGoToToday = () => {
+    const today = new Date();
+    if (viewType === 'month') {
+      setCurrentDate(today);
+    } else {
+      setSelectedDate(today);
+    }
+    toast.info("Jumped to today");
+  };
+  
   const displayDate = selectedDate || currentDate;
+  
   return <div className="flex flex-col w-full space-y-4 mb-4 animate-fade-in">
       <div className="flex items-center justify-between py-[3px] my-[48px]">
         <div className="flex items-center space-x-2 rounded-full bg-primary/20 px-4 py-2 cursor-pointer transition-all hover:bg-primary/30" onClick={onToggleView}>
@@ -51,6 +69,15 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
         </div>
         
         <div className="flex items-center space-x-2">
+          <Button 
+            onClick={handleGoToToday} 
+            variant="outline" 
+            size="sm"
+            className="flex items-center gap-1"
+          >
+            <CalendarDays className="w-4 h-4" />
+            <span>Today</span>
+          </Button>
           <button onClick={handleRefresh} disabled={loading} className={`p-2 rounded-full hover:bg-secondary/80 transition-colors duration-200 ${loading ? 'opacity-50' : ''}`}>
             <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
           </button>
@@ -64,4 +91,5 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
       </div>
     </div>;
 };
+
 export default CalendarHeader;
