@@ -1,5 +1,5 @@
-
 export type EventCategory = 'default' | 'work' | 'personal' | 'important';
+export type TaskStatus = 'To Do' | 'In Progress' | 'Complete' | 'Overdue';
 
 export interface CalendarEvent {
   id: string;
@@ -10,14 +10,15 @@ export interface CalendarEvent {
   category: EventCategory;
   location?: string;
   emoji?: string;
-  itemType?: 'event' | 'task' | 'lesson' | 'class_plan'; // Added class_plan type
-  originalId?: string; // To reference back to the original database item
+  itemType?: 'event' | 'task' | 'lesson' | 'class_plan';
+  originalId?: string;
 }
 
 export interface CalendarTask {
   id: string;
   title: string;
   completed: boolean;
+  status: TaskStatus;
   date: Date;
   category: EventCategory;
   emoji?: string;
@@ -41,7 +42,6 @@ export interface WeatherInfo {
 
 export type CalendarViewType = 'month' | 'week' | 'day';
 
-// Updated to match actual Supabase table structure
 export interface DatabaseEvent {
   id: string;
   event_name: string;
@@ -55,7 +55,6 @@ export interface DatabaseEvent {
   is_public: boolean;
 }
 
-// Updated to match actual Supabase table structure
 export interface DatabaseTask {
   id: string;
   title: string;
@@ -66,10 +65,10 @@ export interface DatabaseTask {
   emoji?: string;
   assigned_to: string;
   created_by: string;
-  completed: boolean;
+  status: TaskStatus;
+  completed?: boolean;
 }
 
-// Updated to match actual Supabase table structure
 export interface DatabaseLesson {
   id: string;
   title: string;
@@ -82,7 +81,6 @@ export interface DatabaseLesson {
   student_id?: string;
 }
 
-// Added class lesson plans interface
 export interface DatabaseClassLessonPlan {
   id: string;
   title?: string;

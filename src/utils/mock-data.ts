@@ -1,5 +1,6 @@
+
 import { addDays, addHours, setHours, startOfDay } from "date-fns";
-import { CalendarEvent, CalendarTask, EventCategory } from "@/types/calendar";
+import { CalendarEvent, CalendarTask, EventCategory, TaskStatus } from "@/types/calendar";
 
 const today = new Date();
 const startOfToday = startOfDay(today);
@@ -85,6 +86,7 @@ export const mockTasks: CalendarTask[] = [
     id: '1',
     title: 'Create a task list for woody',
     completed: false,
+    status: 'To Do',
     date: addDays(today, 0),
     category: 'work',
     emoji: '📊'
@@ -93,6 +95,7 @@ export const mockTasks: CalendarTask[] = [
     id: '2',
     title: 'Finish Feluga Certs',
     completed: false,
+    status: 'In Progress',
     date: addDays(today, 1),
     category: 'important',
     emoji: '🔐'
@@ -101,6 +104,7 @@ export const mockTasks: CalendarTask[] = [
     id: '3',
     title: 'Email back Fiona asap',
     completed: false,
+    status: 'Overdue',
     date: addDays(today, 1),
     category: 'personal',
     emoji: '📧'

@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { CalendarEvent, CalendarTask } from '@/types/calendar';
+import { CalendarEvent, CalendarTask, TaskStatus } from '@/types/calendar';
 import { format } from 'date-fns';
 import { CheckCircle, ExternalLink, Calendar } from 'lucide-react';
 import { getEventCategoryColor } from '@/utils/mock-data';
@@ -28,7 +28,7 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
 
   if (!item) return null;
 
-  const isTask = 'completed' in item;
+  const isTask = 'status' in item || 'completed' in item;
   const isEvent = 'start' in item && !isTask;
 
   const markTaskComplete = async () => {
@@ -36,7 +36,21 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
     
     setLoading(true);
     try {
-      await updateTaskStatus(item.id, true);
+      await updateTaskStatus(item.id, 'Complete');
+      onClose();
+    } catch (error) {
+      console.error('Error updating task:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const updateTaskToStatus = async (status: TaskStatus) => {
+    if (!isTask || !item.id) return;
+    
+    setLoading(true);
+    try {
+      await updateTaskStatus(item.id, status);
       onClose();
     } catch (error) {
       console.error('Error updating task:', error);
@@ -61,7 +75,6 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
 
   const navigateToAssistant = () => {
     if (item.itemType === 'lesson') {
-      // Navigate to Assignment Assistant
       console.log('Navigating to Assignment Assistant for lesson:', item.originalId);
       navigate(`/assignment-assistant/${item.originalId}`);
       onClose();
@@ -70,7 +83,6 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
 
   const navigateToClassCompass = () => {
     if (item.itemType === 'class_plan') {
-      // Navigate to Class Compass
       console.log('Navigating to Class Compass for class plan:', item.originalId);
       navigate(`/class-compass/${item.originalId}`);
       onClose();
@@ -99,6 +111,10 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
     );
   };
 
+  // Determine current task status
+  const taskStatus = isTask && 'status' in item ? item.status : 
+                    isTask && (item as CalendarTask).completed ? 'Complete' : 'To Do';
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
@@ -125,28 +141,62 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
           {isTask && (
             <div className="flex items-center">
               <span className="text-sm mr-2">Status:</span>
-              {(item as CalendarTask).completed ? (
-                <span className="text-sm text-green-600 flex items-center">
-                  <CheckCircle className="w-4 h-4 mr-1" /> Completed
-                </span>
-              ) : (
-                <span className="text-sm text-amber-600">Pending</span>
-              )}
+              <span className={`text-sm px-2 py-0.5 rounded-full ${
+                taskStatus === 'Complete' ? 'bg-green-500/80 text-white' :
+                taskStatus === 'In Progress' ? 'bg-blue-500/80 text-white' :
+                taskStatus === 'Overdue' ? 'bg-red-500/80 text-white' :
+                'bg-gray-500/80 text-white'
+              }`}>
+                {taskStatus}
+              </span>
             </div>
           )}
         </div>
 
         <DialogFooter className="flex sm:justify-between flex-col sm:flex-row gap-2">
-          <div className="flex gap-2">
-            {isTask && !(item as CalendarTask).completed && (
-              <Button 
-                onClick={markTaskComplete}
-                disabled={loading}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Mark Complete
-              </Button>
+          <div className="flex flex-wrap gap-2">
+            {isTask && (
+              <>
+                {taskStatus !== 'Complete' && (
+                  <Button 
+                    onClick={markTaskComplete}
+                    disabled={loading}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Mark Complete
+                  </Button>
+                )}
+                
+                <div className="flex flex-wrap gap-2 mt-2 sm:mt-0">
+                  <Button 
+                    onClick={() => updateTaskToStatus('To Do')}
+                    disabled={loading || taskStatus === 'To Do'}
+                    variant={taskStatus === 'To Do' ? 'default' : 'outline'}
+                    size="sm"
+                  >
+                    To Do
+                  </Button>
+                  <Button 
+                    onClick={() => updateTaskToStatus('In Progress')}
+                    disabled={loading || taskStatus === 'In Progress'}
+                    variant={taskStatus === 'In Progress' ? 'default' : 'outline'}
+                    size="sm"
+                    className={taskStatus === 'In Progress' ? 'bg-blue-600 hover:bg-blue-700' : ''}
+                  >
+                    In Progress
+                  </Button>
+                  <Button 
+                    onClick={() => updateTaskToStatus('Overdue')}
+                    disabled={loading || taskStatus === 'Overdue'}
+                    variant={taskStatus === 'Overdue' ? 'default' : 'outline'}
+                    size="sm"
+                    className={taskStatus === 'Overdue' ? 'bg-red-600 hover:bg-red-700' : ''}
+                  >
+                    Overdue
+                  </Button>
+                </div>
+              </>
             )}
             
             {item.itemType === 'lesson' && (

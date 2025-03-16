@@ -7,7 +7,8 @@ import {
   DatabaseTask, 
   DatabaseLesson,
   DatabaseClassLessonPlan,
-  EventCategory
+  EventCategory,
+  TaskStatus
 } from '@/types/calendar';
 
 // Helper function to determine event category based on type/priority
@@ -68,6 +69,9 @@ export const fetchTasks = async (): Promise<{ events: CalendarEvent[], tasks: Ca
       const category = determineCategoryFromPriority(task.priority_level);
       const uniqueId = task.id || `task-${Math.random().toString(36).substring(2, 9)}`;
       
+      // Map status to the correct TaskStatus type or default to 'To Do'
+      const status: TaskStatus = (task.status as TaskStatus) || 'To Do';
+      
       // Add as event if it has start and due dates
       if (task.start_time && task.due_date) {
         calendarEvents.push({
@@ -86,7 +90,8 @@ export const fetchTasks = async (): Promise<{ events: CalendarEvent[], tasks: Ca
       calendarTasks.push({
         id: `task-${uniqueId}`,
         title: task.title,
-        completed: task.completed || false,
+        completed: status === 'Complete', // Map status to completed flag
+        status, // Add the status field
         date: task.due_date ? new Date(task.due_date) : new Date(),
         category,
         emoji: task.emoji,

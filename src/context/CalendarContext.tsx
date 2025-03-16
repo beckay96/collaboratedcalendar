@@ -1,5 +1,6 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { CalendarEvent, CalendarTask, CalendarViewType } from '@/types/calendar';
+import { CalendarEvent, CalendarTask, CalendarViewType, TaskStatus } from '@/types/calendar';
 import { fetchAllCalendarItems } from '@/services/calendarService';
 import { mockEvents, mockTasks } from '@/utils/mock-data';
 import { toast } from 'sonner';
@@ -15,7 +16,7 @@ interface CalendarContextType {
   setSelectedDate: (date: Date | null) => void;
   loading: boolean;
   refreshCalendar: () => Promise<void>;
-  updateTaskStatus: (taskId: string, completed: boolean) => Promise<void>;
+  updateTaskStatus: (taskId: string, status: TaskStatus) => Promise<void>;
   updateEventRsvp: (eventId: string, status: 'attending' | 'not_attending' | 'maybe') => Promise<void>;
 }
 
@@ -65,17 +66,21 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
     await fetchCalendarData();
   };
 
-  const updateTaskStatus = async (taskId: string, completed: boolean) => {
+  const updateTaskStatus = async (taskId: string, status: TaskStatus) => {
     try {
       if (tasks === mockTasks) {
         const updatedTasks = tasks.map(task => 
-          task.id === taskId ? { ...task, completed } : task
+          task.id === taskId ? { 
+            ...task, 
+            status, 
+            completed: status === 'Complete' 
+          } : task
         );
         setTasks(updatedTasks);
-        toast.success(`Task ${completed ? 'completed' : 'marked as incomplete'}`);
+        toast.success(`Task marked as ${status}`);
         return;
       }
-      console.log('Updating task status:', taskId, completed);
+      console.log('Updating task status:', taskId, status);
       await refreshCalendar();
     } catch (error) {
       console.error('Error updating task status:', error);
