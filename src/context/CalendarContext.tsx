@@ -1,7 +1,9 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { CalendarEvent, CalendarTask, CalendarViewType } from '@/types/calendar';
+import { fetchAllCalendarItems } from '@/services/calendarService';
 import { mockEvents, mockTasks } from '@/utils/mock-data';
+import { toast } from 'sonner';
 
 interface CalendarContextType {
   currentDate: Date;
@@ -12,6 +14,8 @@ interface CalendarContextType {
   setViewType: (type: CalendarViewType) => void;
   selectedDate: Date | null;
   setSelectedDate: (date: Date | null) => void;
+  loading: boolean;
+  refreshCalendar: () => Promise<void>;
 }
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
@@ -34,12 +38,38 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
   const [tasks, setTasks] = useState<CalendarTask[]>([]);
   const [viewType, setViewType] = useState<CalendarViewType>('month');
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  // Initialize with mock data
+  const fetchCalendarData = async () => {
+    setLoading(true);
+    try {
+      // Fetch real data from Supabase
+      const { events: fetchedEvents, tasks: fetchedTasks } = await fetchAllCalendarItems();
+      
+      // If no data, use mocks for demo purposes
+      setEvents(fetchedEvents.length > 0 ? fetchedEvents : mockEvents);
+      setTasks(fetchedTasks.length > 0 ? fetchedTasks : mockTasks);
+    } catch (error) {
+      console.error("Error fetching calendar data:", error);
+      toast.error("Failed to load calendar data");
+      
+      // Fall back to mock data on error
+      setEvents(mockEvents);
+      setTasks(mockTasks);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initial data load
   useEffect(() => {
-    setEvents(mockEvents);
-    setTasks(mockTasks);
+    fetchCalendarData();
   }, []);
+
+  // Function to manually refresh calendar data
+  const refreshCalendar = async () => {
+    await fetchCalendarData();
+  };
 
   return (
     <CalendarContext.Provider
@@ -51,7 +81,9 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
         viewType,
         setViewType,
         selectedDate,
-        setSelectedDate
+        setSelectedDate,
+        loading,
+        refreshCalendar
       }}
     >
       {children}

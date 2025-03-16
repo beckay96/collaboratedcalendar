@@ -1,16 +1,17 @@
 
 import React from 'react';
 import { format } from 'date-fns';
-import { CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CalendarIcon, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { useCalendar } from '@/context/CalendarContext';
 import { getFormattedMonthYear, getNextMonth, getPreviousMonth } from '@/utils/calendar-utils';
+import { toast } from 'sonner';
 
 interface CalendarHeaderProps {
   onToggleView: () => void;
 }
 
 const CalendarHeader: React.FC<CalendarHeaderProps> = ({ onToggleView }) => {
-  const { currentDate, setCurrentDate, viewType, selectedDate } = useCalendar();
+  const { currentDate, setCurrentDate, viewType, selectedDate, refreshCalendar, loading } = useCalendar();
 
   const handlePrevious = () => {
     setCurrentDate(getPreviousMonth(currentDate));
@@ -18,6 +19,12 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({ onToggleView }) => {
 
   const handleNext = () => {
     setCurrentDate(getNextMonth(currentDate));
+  };
+
+  const handleRefresh = async () => {
+    toast.info("Refreshing calendar data...");
+    await refreshCalendar();
+    toast.success("Calendar refreshed");
   };
 
   const displayDate = selectedDate || currentDate;
@@ -38,6 +45,13 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({ onToggleView }) => {
         </div>
         
         <div className="flex items-center space-x-2">
+          <button 
+            onClick={handleRefresh}
+            disabled={loading}
+            className={`p-2 rounded-full hover:bg-secondary/80 transition-colors duration-200 ${loading ? 'opacity-50' : ''}`}
+          >
+            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+          </button>
           <button 
             onClick={handlePrevious}
             className="p-2 rounded-full hover:bg-secondary/80 transition-colors duration-200"

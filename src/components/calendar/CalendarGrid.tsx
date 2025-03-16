@@ -5,9 +5,10 @@ import { useCalendar } from '@/context/CalendarContext';
 import { getCalendarDays, getWeekDaysNames } from '@/utils/calendar-utils';
 import { getEventCategoryColor } from '@/utils/mock-data';
 import { mockWeatherData } from '@/utils/mock-data';
+import { Loader2 } from 'lucide-react';
 
 const CalendarGrid: React.FC = () => {
-  const { currentDate, events, tasks, setSelectedDate, setViewType } = useCalendar();
+  const { currentDate, events, tasks, setSelectedDate, setViewType, loading } = useCalendar();
   const calendarDays = getCalendarDays(currentDate, events, tasks);
   const weekDays = getWeekDaysNames();
 
@@ -15,6 +16,15 @@ const CalendarGrid: React.FC = () => {
     setSelectedDate(date);
     setViewType('day');
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2 text-muted-foreground">Loading calendar...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full animate-scale-in">
@@ -62,14 +72,19 @@ const CalendarGrid: React.FC = () => {
                 )}
               </div>
               
-              {/* Event indicators */}
+              {/* Event indicators with item type badges */}
               <div className="mt-auto w-full">
                 {day.events.slice(0, 2).map((event, eventIndex) => (
                   <div 
                     key={`event-${eventIndex}`} 
-                    className={`event-tag text-[9px] ${getEventCategoryColor(event.category)}`}
+                    className={`event-tag text-[9px] flex items-center justify-between ${getEventCategoryColor(event.category)}`}
                   >
-                    {event.title}
+                    <span className="truncate">{event.title}</span>
+                    {event.itemType && (
+                      <span className="text-[7px] bg-black/20 rounded px-1 ml-1">
+                        {event.itemType.charAt(0).toUpperCase()}
+                      </span>
+                    )}
                   </div>
                 ))}
                 

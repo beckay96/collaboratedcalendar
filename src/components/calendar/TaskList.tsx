@@ -1,18 +1,27 @@
 
 import React, { useState } from 'react';
 import { useCalendar } from '@/context/CalendarContext';
-import { CheckCircle, Circle, Plus } from 'lucide-react';
+import { CheckCircle, Circle, Loader2, Plus } from 'lucide-react';
 import { getEventCategoryColor } from '@/utils/mock-data';
 import { CalendarTask } from '@/types/calendar';
 
 const TaskList: React.FC = () => {
-  const { tasks } = useCalendar();
+  const { tasks, loading } = useCalendar();
   const [filter, setFilter] = useState<'all' | 'me'>('me');
 
   const handleTaskToggle = (taskId: string) => {
     // In a real app, this would update the task in the database
     console.log('Toggle task:', taskId);
   };
+
+  if (loading) {
+    return (
+      <div className="mt-4 p-3 bg-card/50 rounded-xl border border-border/50 h-48 flex items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <span className="ml-2 text-muted-foreground">Loading tasks...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-4 p-3 bg-card/50 rounded-xl border border-border/50 animate-scale-in">
@@ -43,14 +52,20 @@ const TaskList: React.FC = () => {
       </div>
 
       <div className="space-y-2">
-        {tasks.map((task, index) => (
-          <TaskItem
-            key={task.id}
-            task={task}
-            index={index}
-            onToggle={() => handleTaskToggle(task.id)}
-          />
-        ))}
+        {tasks.length === 0 ? (
+          <div className="text-muted-foreground text-center py-4">
+            No tasks found
+          </div>
+        ) : (
+          tasks.map((task, index) => (
+            <TaskItem
+              key={task.id}
+              task={task}
+              index={index}
+              onToggle={() => handleTaskToggle(task.id)}
+            />
+          ))
+        )}
       </div>
       
       <button className="flex items-center mt-4 text-muted-foreground hover:text-foreground transition-colors">
@@ -84,10 +99,15 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, index, onToggle }) => {
         <p className={`${task.completed ? 'line-through text-muted-foreground' : ''}`}>
           {task.title}
         </p>
-        <div className="flex items-center mt-1">
+        <div className="flex items-center mt-1 space-x-2">
           <span className={`text-xs px-2 py-0.5 rounded-full ${getEventCategoryColor(task.category)}`}>
             {task.category}
           </span>
+          {task.itemType && (
+            <span className="text-xs bg-secondary/80 rounded px-1 py-0.5">
+              {task.itemType}
+            </span>
+          )}
         </div>
       </div>
     </div>

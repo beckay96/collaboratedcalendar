@@ -1,15 +1,15 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { CalendarProvider } from '@/context/CalendarContext';
 import CalendarHeader from '@/components/calendar/CalendarHeader';
 import CalendarGrid from '@/components/calendar/CalendarGrid';
 import DayView from '@/components/calendar/DayView';
 import TaskList from '@/components/calendar/TaskList';
 import { useCalendar } from '@/context/CalendarContext';
-import { X } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
 
 const CalendarApp: React.FC = () => {
-  const { viewType, setViewType, selectedDate, setSelectedDate } = useCalendar();
+  const { viewType, setViewType, selectedDate, setSelectedDate, loading } = useCalendar();
 
   const toggleView = () => {
     if (viewType === 'month') {

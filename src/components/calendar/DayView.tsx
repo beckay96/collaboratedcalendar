@@ -3,13 +3,23 @@ import React from 'react';
 import { addHours, format, isSameDay, startOfDay } from 'date-fns';
 import { useCalendar } from '@/context/CalendarContext';
 import { getEventCategoryColor, mockWeatherData } from '@/utils/mock-data';
+import { Loader2 } from 'lucide-react';
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
 const DayView: React.FC = () => {
-  const { selectedDate, events } = useCalendar();
+  const { selectedDate, events, loading } = useCalendar();
   
   if (!selectedDate) return null;
+  
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2 text-muted-foreground">Loading day view...</span>
+      </div>
+    );
+  }
   
   const dayEvents = events.filter(event => isSameDay(event.start, selectedDate));
   const allDayEvents = dayEvents.filter(event => event.allDay);
@@ -34,7 +44,14 @@ const DayView: React.FC = () => {
               key={`all-day-${index}`}
               className={`mb-2 p-2 rounded-md ${getEventCategoryColor(event.category)}`}
             >
-              <h4 className="font-medium">{event.title}</h4>
+              <div className="flex items-center justify-between">
+                <h4 className="font-medium">{event.title}</h4>
+                {event.itemType && (
+                  <span className="text-xs bg-black/20 rounded px-1 py-0.5">
+                    {event.itemType}
+                  </span>
+                )}
+              </div>
               {event.location && <p className="text-xs opacity-90">{event.location}</p>}
             </div>
           ))}
@@ -96,7 +113,14 @@ const DayView: React.FC = () => {
                       minHeight: '40px'
                     }}
                   >
-                    <h4 className="font-medium">{event.title}</h4>
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-medium">{event.title}</h4>
+                      {event.itemType && (
+                        <span className="text-[10px] bg-black/20 rounded px-1 py-0.5 ml-1">
+                          {event.itemType}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs">
                       {format(event.start, 'h:mm a')} - {format(event.end, 'h:mm a')}
                     </p>
