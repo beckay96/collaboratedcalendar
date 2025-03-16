@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { format } from 'date-fns';
+import { format, addDays, subDays } from 'date-fns';
 import { CalendarIcon, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { useCalendar } from '@/context/CalendarContext';
 import { getFormattedMonthYear, getNextMonth, getPreviousMonth } from '@/utils/calendar-utils';
@@ -11,14 +11,32 @@ interface CalendarHeaderProps {
 }
 
 const CalendarHeader: React.FC<CalendarHeaderProps> = ({ onToggleView }) => {
-  const { currentDate, setCurrentDate, viewType, selectedDate, refreshCalendar, loading } = useCalendar();
+  const { 
+    currentDate, 
+    setCurrentDate, 
+    viewType, 
+    selectedDate, 
+    setSelectedDate,
+    refreshCalendar, 
+    loading 
+  } = useCalendar();
 
   const handlePrevious = () => {
-    setCurrentDate(getPreviousMonth(currentDate));
+    if (viewType === 'month') {
+      setCurrentDate(getPreviousMonth(currentDate));
+    } else if (viewType === 'day' && selectedDate) {
+      const prevDay = subDays(selectedDate, 1);
+      setSelectedDate(prevDay);
+    }
   };
 
   const handleNext = () => {
-    setCurrentDate(getNextMonth(currentDate));
+    if (viewType === 'month') {
+      setCurrentDate(getNextMonth(currentDate));
+    } else if (viewType === 'day' && selectedDate) {
+      const nextDay = addDays(selectedDate, 1);
+      setSelectedDate(nextDay);
+    }
   };
 
   const handleRefresh = async () => {
