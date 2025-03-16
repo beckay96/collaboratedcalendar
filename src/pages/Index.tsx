@@ -25,7 +25,7 @@ const CalendarApp: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col w-full px-4 py-6 space-y-4 max-w-3xl mx-auto">
+    <div className="flex flex-col w-full px-4 py-6 space-y-4 max-w-full mx-auto">
       <CalendarHeader onToggleView={toggleView} />
       
       {viewType === 'month' ? (
