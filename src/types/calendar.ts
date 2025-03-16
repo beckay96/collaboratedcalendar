@@ -9,7 +9,8 @@ export interface CalendarEvent {
   allDay?: boolean;
   category: EventCategory;
   location?: string;
-  itemType?: 'event' | 'task' | 'lesson'; // For differentiating between different types
+  emoji?: string;
+  itemType?: 'event' | 'task' | 'lesson' | 'class_plan'; // Added class_plan type
   originalId?: string; // To reference back to the original database item
 }
 
@@ -19,7 +20,8 @@ export interface CalendarTask {
   completed: boolean;
   date: Date;
   category: EventCategory;
-  itemType?: 'event' | 'task' | 'lesson';
+  emoji?: string;
+  itemType?: 'event' | 'task' | 'lesson' | 'class_plan';
   originalId?: string;
 }
 
@@ -39,6 +41,7 @@ export interface WeatherInfo {
 
 export type CalendarViewType = 'month' | 'week' | 'day';
 
+// Updated to match actual Supabase table structure
 export interface DatabaseEvent {
   id: string;
   event_name: string;
@@ -46,10 +49,13 @@ export interface DatabaseEvent {
   start_date_time: string;
   end_date_time: string;
   location?: string;
+  emoji?: string;
+  event_type?: string;
   created_by: string;
   is_public: boolean;
 }
 
+// Updated to match actual Supabase table structure
 export interface DatabaseTask {
   id: string;
   title: string;
@@ -57,11 +63,13 @@ export interface DatabaseTask {
   start_time: string;
   due_date: string;
   priority_level: number;
+  emoji?: string;
   assigned_to: string;
   created_by: string;
   completed: boolean;
 }
 
+// Updated to match actual Supabase table structure
 export interface DatabaseLesson {
   id: string;
   title: string;
@@ -69,6 +77,20 @@ export interface DatabaseLesson {
   date_to_commence: string;
   date_due: string;
   complete: boolean;
-  teacher_id: string;
-  student_id: string;
+  emoji?: string;
+  teacher_id?: string;
+  student_id?: string;
+}
+
+// Added class lesson plans interface
+export interface DatabaseClassLessonPlan {
+  id: string;
+  title?: string;
+  description?: string;
+  start_time: string;
+  due_date: string;
+  emoji?: string;
+  teacher_id?: string;
+  class_id?: number;
+  percentage_complete?: number;
 }

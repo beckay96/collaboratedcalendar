@@ -6,6 +6,7 @@ import {
   DatabaseEvent, 
   DatabaseTask, 
   DatabaseLesson,
+  DatabaseClassLessonPlan,
   EventCategory
 } from '@/types/calendar';
 
@@ -28,7 +29,8 @@ export const fetchEvents = async (): Promise<CalendarEvent[]> => {
       return [];
     }
 
-    return (events as DatabaseEvent[]).map(event => ({
+    // Cast to unknown first to handle type mismatch
+    return ((events as unknown) as DatabaseEvent[]).map(event => ({
       id: `event-${event.id}`,
       title: event.event_name,
       start: new Date(event.start_date_time),
@@ -36,6 +38,7 @@ export const fetchEvents = async (): Promise<CalendarEvent[]> => {
       allDay: false, // Could determine this by comparing start and end times
       category: 'default',
       location: event.location,
+      emoji: event.emoji,
       itemType: 'event',
       originalId: event.id
     }));
@@ -60,7 +63,8 @@ export const fetchTasks = async (): Promise<{ events: CalendarEvent[], tasks: Ca
     const calendarEvents: CalendarEvent[] = [];
     const calendarTasks: CalendarTask[] = [];
 
-    (tasks as DatabaseTask[]).forEach(task => {
+    // Cast to unknown first to handle type mismatch
+    ((tasks as unknown) as DatabaseTask[]).forEach(task => {
       const category = determineCategoryFromPriority(task.priority_level);
       
       // Add as event if it has start and due dates
@@ -71,6 +75,7 @@ export const fetchTasks = async (): Promise<{ events: CalendarEvent[], tasks: Ca
           start: new Date(task.start_time),
           end: new Date(task.due_date),
           category,
+          emoji: task.emoji,
           itemType: 'task',
           originalId: task.id
         });
@@ -83,6 +88,7 @@ export const fetchTasks = async (): Promise<{ events: CalendarEvent[], tasks: Ca
         completed: task.completed || false,
         date: task.due_date ? new Date(task.due_date) : new Date(),
         category,
+        emoji: task.emoji,
         itemType: 'task',
         originalId: task.id
       });
@@ -107,18 +113,50 @@ export const fetchLessons = async (): Promise<CalendarEvent[]> => {
       return [];
     }
 
-    return (lessons as DatabaseLesson[]).map(lesson => ({
+    // Cast to unknown first to handle type mismatch
+    return ((lessons as unknown) as DatabaseLesson[]).map(lesson => ({
       id: `lesson-${lesson.id}`,
-      title: lesson.title,
+      title: lesson.title || 'Untitled Lesson',
       start: new Date(lesson.date_to_commence),
       end: new Date(lesson.date_due),
       allDay: true, // Lessons are typically day-based
       category: 'work',
+      emoji: lesson.emoji,
       itemType: 'lesson',
       originalId: lesson.id
     }));
   } catch (error) {
     console.error('Error in fetchLessons:', error);
+    return [];
+  }
+};
+
+// Fetch class lesson plans (for teachers)
+export const fetchClassLessonPlans = async (): Promise<CalendarEvent[]> => {
+  try {
+    const { data: lessonPlans, error } = await supabase
+      .from('class_lesson_plans')
+      .select('*');
+
+    if (error) {
+      console.error('Error fetching class lesson plans:', error);
+      return [];
+    }
+
+    // Cast to unknown first to handle type mismatch
+    return ((lessonPlans as unknown) as DatabaseClassLessonPlan[]).map(plan => ({
+      id: `class-plan-${plan.id}`,
+      title: plan.title || 'Class Plan',
+      start: new Date(plan.start_time),
+      end: new Date(plan.due_date),
+      allDay: false,
+      category: 'work',
+      emoji: plan.emoji,
+      itemType: 'class_plan',
+      originalId: plan.id
+    }));
+  } catch (error) {
+    console.error('Error in fetchClassLessonPlans:', error);
     return [];
   }
 };
@@ -132,9 +170,10 @@ export const fetchAllCalendarItems = async (): Promise<{
     const events = await fetchEvents();
     const { events: taskEvents, tasks } = await fetchTasks();
     const lessons = await fetchLessons();
+    const classLessonPlans = await fetchClassLessonPlans();
 
     return {
-      events: [...events, ...taskEvents, ...lessons],
+      events: [...events, ...taskEvents, ...lessons, ...classLessonPlans],
       tasks
     };
   } catch (error) {

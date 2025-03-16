@@ -97,6 +97,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, index, onToggle }) => {
       </button>
       <div className="flex-1">
         <p className={`${task.completed ? 'line-through text-muted-foreground' : ''}`}>
+          {task.emoji && <span className="mr-1">{task.emoji}</span>}
           {task.title}
         </p>
         <div className="flex items-center mt-1 space-x-2">
@@ -105,7 +106,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, index, onToggle }) => {
           </span>
           {task.itemType && (
             <span className="text-xs bg-secondary/80 rounded px-1 py-0.5">
-              {task.itemType}
+              {task.itemType === 'class_plan' ? 'Class Plan' : task.itemType}
             </span>
           )}
         </div>
