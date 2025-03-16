@@ -1,14 +1,18 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { addHours, format, isSameDay, startOfDay } from 'date-fns';
 import { useCalendar } from '@/context/CalendarContext';
 import { getEventCategoryColor, mockWeatherData } from '@/utils/mock-data';
 import { Loader2 } from 'lucide-react';
+import { CalendarEvent } from '@/types/calendar';
+import ItemDetailModal from './ItemDetailModal';
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
 const DayView: React.FC = () => {
   const { selectedDate, events, loading } = useCalendar();
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   
   if (!selectedDate) return null;
   
@@ -32,6 +36,16 @@ const DayView: React.FC = () => {
   const currentHour = now.getHours();
   const currentMinute = now.getMinutes();
   const timePercentage = (currentHour + currentMinute / 60) / 24 * 100;
+
+  const handleEventClick = (event: CalendarEvent) => {
+    setSelectedEvent(event);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedEvent(null);
+  };
   
   return (
     <div className="w-full h-full overflow-y-auto animate-fade-in pb-20">
@@ -42,7 +56,8 @@ const DayView: React.FC = () => {
           {allDayEvents.map((event, index) => (
             <div 
               key={`all-day-${index}`}
-              className={`mb-2 p-2 rounded-md ${getEventCategoryColor(event.category)}`}
+              className={`mb-2 p-2 rounded-md ${getEventCategoryColor(event.category)} cursor-pointer hover:opacity-90 transition-opacity`}
+              onClick={() => handleEventClick(event)}
             >
               <div className="flex items-center justify-between">
                 <h4 className="font-medium flex items-center">
@@ -109,12 +124,13 @@ const DayView: React.FC = () => {
                 {hourEvents.map((event, index) => (
                   <div 
                     key={`event-${hour}-${index}`}
-                    className={`p-2 my-1 rounded-md animate-slide-up shadow-sm
+                    className={`p-2 my-1 rounded-md animate-slide-up shadow-sm cursor-pointer hover:opacity-90 transition-opacity
                       ${getEventCategoryColor(event.category)}`}
                     style={{ 
                       animationDelay: `${index * 0.05}s`,
                       minHeight: '40px'
                     }}
+                    onClick={() => handleEventClick(event)}
                   >
                     <div className="flex items-center justify-between">
                       <h4 className="font-medium flex items-center">
@@ -122,7 +138,7 @@ const DayView: React.FC = () => {
                         <span>{event.title}</span>
                       </h4>
                       {event.itemType && (
-                        <span className="text-[10px] bg-black/20 rounded px-1 py-0.5 ml-1">
+                        <span className="text-xs bg-black/20 rounded px-1 py-0.5 ml-1">
                           {event.itemType === 'class_plan' ? 'Class Plan' : event.itemType}
                         </span>
                       )}
@@ -137,6 +153,12 @@ const DayView: React.FC = () => {
           );
         })}
       </div>
+
+      <ItemDetailModal 
+        item={selectedEvent} 
+        isOpen={isModalOpen} 
+        onClose={closeModal} 
+      />
     </div>
   );
 };

@@ -1,20 +1,35 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { useCalendar } from '@/context/CalendarContext';
 import { getCalendarDays, getWeekDaysNames } from '@/utils/calendar-utils';
 import { getEventCategoryColor } from '@/utils/mock-data';
 import { mockWeatherData } from '@/utils/mock-data';
 import { Loader2 } from 'lucide-react';
+import { CalendarEvent } from '@/types/calendar';
+import ItemDetailModal from './ItemDetailModal';
 
 const CalendarGrid: React.FC = () => {
   const { currentDate, events, tasks, setSelectedDate, setViewType, loading } = useCalendar();
   const calendarDays = getCalendarDays(currentDate, events, tasks);
   const weekDays = getWeekDaysNames();
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleDayClick = (date: Date) => {
     setSelectedDate(date);
     setViewType('day');
+  };
+
+  const handleEventClick = (event: CalendarEvent, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedEvent(event);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedEvent(null);
   };
 
   if (loading) {
@@ -78,6 +93,7 @@ const CalendarGrid: React.FC = () => {
                   <div 
                     key={`event-${eventIndex}`} 
                     className={`event-tag text-[9px] flex items-center justify-between ${getEventCategoryColor(event.category)}`}
+                    onClick={(e) => handleEventClick(event, e)}
                   >
                     <div className="flex items-center overflow-hidden">
                       {event.emoji && (
@@ -104,6 +120,12 @@ const CalendarGrid: React.FC = () => {
           );
         })}
       </div>
+
+      <ItemDetailModal 
+        item={selectedEvent} 
+        isOpen={isModalOpen} 
+        onClose={closeModal} 
+      />
     </div>
   );
 };

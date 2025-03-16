@@ -16,6 +16,8 @@ interface CalendarContextType {
   setSelectedDate: (date: Date | null) => void;
   loading: boolean;
   refreshCalendar: () => Promise<void>;
+  updateTaskStatus: (taskId: string, completed: boolean) => Promise<void>;
+  updateEventRsvp: (eventId: string, status: 'attending' | 'not_attending' | 'maybe') => Promise<void>;
 }
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
@@ -71,6 +73,55 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
     await fetchCalendarData();
   };
 
+  // Update task completion status
+  const updateTaskStatus = async (taskId: string, completed: boolean) => {
+    try {
+      // For mock data, update local state
+      if (tasks === mockTasks) {
+        const updatedTasks = tasks.map(task => 
+          task.id === taskId ? { ...task, completed } : task
+        );
+        setTasks(updatedTasks);
+        toast.success(`Task ${completed ? 'completed' : 'marked as incomplete'}`);
+        return;
+      }
+
+      // In a real implementation, we would call a service function here
+      // that updates the task in Supabase
+      console.log('Updating task status:', taskId, completed);
+      
+      // Refresh data after update
+      await refreshCalendar();
+    } catch (error) {
+      console.error('Error updating task status:', error);
+      toast.error('Failed to update task');
+      throw error;
+    }
+  };
+
+  // Update event RSVP status
+  const updateEventRsvp = async (eventId: string, status: 'attending' | 'not_attending' | 'maybe') => {
+    try {
+      // For mock data, just log
+      if (events === mockEvents) {
+        console.log('Updating RSVP for event:', eventId, 'to', status);
+        toast.success(`RSVP updated to ${status}`);
+        return;
+      }
+
+      // In a real implementation, we would call a service function here
+      // that updates the RSVP in Supabase
+      console.log('Updating event RSVP:', eventId, status);
+      
+      // Refresh data after update
+      await refreshCalendar();
+    } catch (error) {
+      console.error('Error updating RSVP:', error);
+      toast.error('Failed to update RSVP');
+      throw error;
+    }
+  };
+
   return (
     <CalendarContext.Provider
       value={{
@@ -83,7 +134,9 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
         selectedDate,
         setSelectedDate,
         loading,
-        refreshCalendar
+        refreshCalendar,
+        updateTaskStatus,
+        updateEventRsvp
       }}
     >
       {children}

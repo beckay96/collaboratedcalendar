@@ -4,14 +4,27 @@ import { useCalendar } from '@/context/CalendarContext';
 import { CheckCircle, Circle, Loader2, Plus } from 'lucide-react';
 import { getEventCategoryColor } from '@/utils/mock-data';
 import { CalendarTask } from '@/types/calendar';
+import ItemDetailModal from './ItemDetailModal';
 
 const TaskList: React.FC = () => {
   const { tasks, loading } = useCalendar();
   const [filter, setFilter] = useState<'all' | 'me'>('me');
+  const [selectedTask, setSelectedTask] = useState<CalendarTask | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleTaskToggle = (taskId: string) => {
     // In a real app, this would update the task in the database
     console.log('Toggle task:', taskId);
+  };
+
+  const handleTaskClick = (task: CalendarTask) => {
+    setSelectedTask(task);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedTask(null);
   };
 
   if (loading) {
@@ -63,6 +76,7 @@ const TaskList: React.FC = () => {
               task={task}
               index={index}
               onToggle={() => handleTaskToggle(task.id)}
+              onClick={() => handleTaskClick(task)}
             />
           ))
         )}
@@ -72,6 +86,12 @@ const TaskList: React.FC = () => {
         <Plus className="w-4 h-4 mr-2" />
         <span>Add to-do</span>
       </button>
+
+      <ItemDetailModal 
+        item={selectedTask} 
+        isOpen={isModalOpen} 
+        onClose={closeModal} 
+      />
     </div>
   );
 };
@@ -80,15 +100,23 @@ interface TaskItemProps {
   task: CalendarTask;
   index: number;
   onToggle: () => void;
+  onClick: () => void;
 }
 
-const TaskItem: React.FC<TaskItemProps> = ({ task, index, onToggle }) => {
+const TaskItem: React.FC<TaskItemProps> = ({ task, index, onToggle, onClick }) => {
   return (
     <div
-      className={`flex items-start p-2 rounded-md hover:bg-secondary/30 transition-all duration-200 animate-slide-up`}
+      className={`flex items-start p-2 rounded-md hover:bg-secondary/30 transition-all duration-200 animate-slide-up cursor-pointer`}
       style={{ animationDelay: `${index * 0.05}s` }}
+      onClick={onClick}
     >
-      <button onClick={onToggle} className="mr-3 mt-0.5 flex-shrink-0">
+      <button 
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggle();
+        }} 
+        className="mr-3 mt-0.5 flex-shrink-0"
+      >
         {task.completed ? (
           <CheckCircle className="w-5 h-5 text-primary" />
         ) : (
