@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { CalendarProvider } from '@/context/CalendarContext';
 import CalendarHeader from '@/components/calendar/CalendarHeader';
 import CalendarGrid from '@/components/calendar/CalendarGrid';
@@ -7,6 +7,8 @@ import DayView from '@/components/calendar/DayView';
 import TaskList from '@/components/calendar/TaskList';
 import { useCalendar } from '@/context/CalendarContext';
 import { Loader2, X } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 const CalendarApp: React.FC = () => {
   const { viewType, setViewType, selectedDate, setSelectedDate, loading } = useCalendar();
@@ -54,6 +56,33 @@ const CalendarApp: React.FC = () => {
 };
 
 const Index = () => {
+  const [searchParams] = useSearchParams();
+  
+  // Extract auth tokens from URL if present
+  useEffect(() => {
+    const authToken = searchParams.get('auth_token');
+    const userId = searchParams.get('user_id');
+    
+    if (authToken && userId) {
+      console.log('Authentication parameters detected in URL');
+      // Set the session in Supabase with the provided token
+      const setupAuth = async () => {
+        try {
+          // Store the session data
+          await supabase.auth.setSession({
+            access_token: authToken,
+            refresh_token: ''
+          });
+          console.log('Auth session established for user:', userId);
+        } catch (error) {
+          console.error('Error setting up authentication from URL parameters:', error);
+        }
+      };
+      
+      setupAuth();
+    }
+  }, [searchParams]);
+
   return (
     <div className="min-h-screen w-full bg-background dark:bg-gradient-to-b dark:from-background dark:to-background/80">
       <CalendarProvider>
