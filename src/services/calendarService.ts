@@ -66,11 +66,12 @@ export const fetchTasks = async (): Promise<{ events: CalendarEvent[], tasks: Ca
     // Cast to unknown first to handle type mismatch
     ((tasks as unknown) as DatabaseTask[]).forEach(task => {
       const category = determineCategoryFromPriority(task.priority_level);
+      const uniqueId = task.id || `task-${Math.random().toString(36).substring(2, 9)}`;
       
       // Add as event if it has start and due dates
       if (task.start_time && task.due_date) {
         calendarEvents.push({
-          id: `task-event-${task.id}`,
+          id: `task-event-${uniqueId}`,
           title: task.title,
           start: new Date(task.start_time),
           end: new Date(task.due_date),
@@ -83,7 +84,7 @@ export const fetchTasks = async (): Promise<{ events: CalendarEvent[], tasks: Ca
       
       // Always add as task
       calendarTasks.push({
-        id: `task-${task.id}`,
+        id: `task-${uniqueId}`,
         title: task.title,
         completed: task.completed || false,
         date: task.due_date ? new Date(task.due_date) : new Date(),

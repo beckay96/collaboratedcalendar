@@ -79,12 +79,14 @@ const CalendarGrid: React.FC = () => {
                     key={`event-${eventIndex}`} 
                     className={`event-tag text-[9px] flex items-center justify-between ${getEventCategoryColor(event.category)}`}
                   >
-                    <span className="truncate">
-                      {event.emoji && <span className="mr-1">{event.emoji}</span>}
-                      {event.title}
-                    </span>
+                    <div className="flex items-center overflow-hidden">
+                      {event.emoji && (
+                        <span className="mr-0.5 flex-shrink-0">{event.emoji}</span>
+                      )}
+                      <span className="truncate">{event.title}</span>
+                    </div>
                     {event.itemType && (
-                      <span className="text-[7px] bg-black/20 rounded px-1 ml-1">
+                      <span className="text-[7px] bg-black/20 rounded px-1 ml-1 flex-shrink-0">
                         {event.itemType === 'class_plan' ? 'C' : event.itemType.charAt(0).toUpperCase()}
                       </span>
                     )}

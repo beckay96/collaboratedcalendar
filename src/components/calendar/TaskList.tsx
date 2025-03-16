@@ -59,7 +59,7 @@ const TaskList: React.FC = () => {
         ) : (
           tasks.map((task, index) => (
             <TaskItem
-              key={task.id}
+              key={task.id || `generated-task-${index}`}
               task={task}
               index={index}
               onToggle={() => handleTaskToggle(task.id)}
@@ -96,9 +96,9 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, index, onToggle }) => {
         )}
       </button>
       <div className="flex-1">
-        <p className={`${task.completed ? 'line-through text-muted-foreground' : ''}`}>
-          {task.emoji && <span className="mr-1">{task.emoji}</span>}
-          {task.title}
+        <p className={`${task.completed ? 'line-through text-muted-foreground' : ''} flex items-center`}>
+          {task.emoji && <span className="mr-2">{task.emoji}</span>}
+          <span>{task.title}</span>
         </p>
         <div className="flex items-center mt-1 space-x-2">
           <span className={`text-xs px-2 py-0.5 rounded-full ${getEventCategoryColor(task.category)}`}>

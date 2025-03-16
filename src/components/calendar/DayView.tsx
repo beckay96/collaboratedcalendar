@@ -45,9 +45,9 @@ const DayView: React.FC = () => {
               className={`mb-2 p-2 rounded-md ${getEventCategoryColor(event.category)}`}
             >
               <div className="flex items-center justify-between">
-                <h4 className="font-medium">
-                  {event.emoji && <span className="mr-1">{event.emoji}</span>}
-                  {event.title}
+                <h4 className="font-medium flex items-center">
+                  {event.emoji && <span className="mr-2">{event.emoji}</span>}
+                  <span>{event.title}</span>
                 </h4>
                 {event.itemType && (
                   <span className="text-xs bg-black/20 rounded px-1 py-0.5">
@@ -117,9 +117,9 @@ const DayView: React.FC = () => {
                     }}
                   >
                     <div className="flex items-center justify-between">
-                      <h4 className="font-medium">
-                        {event.emoji && <span className="mr-1">{event.emoji}</span>}
-                        {event.title}
+                      <h4 className="font-medium flex items-center">
+                        {event.emoji && <span className="mr-2">{event.emoji}</span>}
+                        <span>{event.title}</span>
                       </h4>
                       {event.itemType && (
                         <span className="text-[10px] bg-black/20 rounded px-1 py-0.5 ml-1">

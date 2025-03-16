@@ -1,4 +1,3 @@
-
 import { addDays, addHours, setHours, startOfDay } from "date-fns";
 import { CalendarEvent, CalendarTask, EventCategory } from "@/types/calendar";
 
@@ -12,63 +11,72 @@ export const mockEvents: CalendarEvent[] = [
     start: setHours(startOfToday, 9),
     end: setHours(startOfToday, 17),
     allDay: true,
-    category: 'work'
+    category: 'work',
+    emoji: '🖼️'
   },
   {
     id: '2',
     title: 'ChatGPT Meeting',
     start: setHours(startOfToday, 10),
     end: setHours(startOfToday, 11),
-    category: 'work'
+    category: 'work',
+    emoji: '🤖'
   },
   {
     id: '3',
     title: 'ClickUp Task Review',
     start: addDays(setHours(startOfToday, 14), 2),
     end: addDays(setHours(startOfToday, 15), 2),
-    category: 'work'
+    category: 'work',
+    emoji: '📋'
   },
   {
     id: '4',
     title: 'Belong Conference',
     start: addDays(setHours(startOfToday, 9), 3),
     end: addDays(setHours(startOfToday, 16), 3),
-    category: 'important'
+    category: 'important',
+    emoji: '🏢'
   },
   {
     id: '5',
     title: 'Casey Check-in',
     start: addDays(setHours(startOfToday, 15), 4),
     end: addDays(setHours(startOfToday, 16), 4),
-    category: 'personal'
+    category: 'personal',
+    emoji: '👥'
   },
   {
     id: '6',
     title: 'Mix and Shake Tully dance',
     start: addDays(setHours(startOfToday, 9), 5),
     end: addDays(setHours(startOfToday, 11), 5),
-    category: 'personal'
+    category: 'personal',
+    emoji: '💃'
   },
   {
     id: '7',
     title: 'Bec x Woody',
     start: addDays(setHours(startOfToday, 14), 5),
     end: addDays(setHours(startOfToday, 15), 5),
-    category: 'personal'
+    category: 'personal',
+    emoji: '🐶'
   },
   {
     id: '8',
     title: 'Perplexi Planning',
     start: addDays(setHours(startOfToday, 10), 8),
     end: addDays(setHours(startOfToday, 12), 8),
-    category: 'work'
+    category: 'work',
+    emoji: '🧩'
   },
   {
     id: '9',
     title: "Rego's Session",
     start: addDays(setHours(startOfToday, 14), 9),
     end: addDays(setHours(startOfToday, 16), 9),
-    category: 'important'
+    category: 'important',
+    emoji: '📝'
   }
 ];
 
@@ -78,21 +86,24 @@ export const mockTasks: CalendarTask[] = [
     title: 'Create a task list for woody',
     completed: false,
     date: addDays(today, 0),
-    category: 'work'
+    category: 'work',
+    emoji: '📊'
   },
   {
     id: '2',
     title: 'Finish Feluga Certs',
     completed: false,
     date: addDays(today, 1),
-    category: 'important'
+    category: 'important',
+    emoji: '🔐'
   },
   {
     id: '3',
     title: 'Email back Fiona asap',
     completed: false,
     date: addDays(today, 1),
-    category: 'personal'
+    category: 'personal',
+    emoji: '📧'
   }
 ];
 
