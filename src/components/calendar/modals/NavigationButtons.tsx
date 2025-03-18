@@ -22,17 +22,23 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
     if (itemType === 'lesson' && originalId) {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        const authToken = session?.access_token || '';
-        const userId = session?.user?.id || '';
         
-        console.log('Navigating to Assignment Assistant for lesson:', originalId);
-        
-        // Navigate with auth data in URL params
-        navigate(`/assignment-assistant/${originalId}?auth_token=${authToken}&user_id=${userId}`);
+        if (session?.access_token) {
+          // Store auth data in sessionStorage instead of URL parameters
+          sessionStorage.setItem('calendar_auth_token', session.access_token);
+          sessionStorage.setItem('calendar_user_id', session.user?.id || '');
+          
+          console.log('Navigating to Assignment Assistant for lesson:', originalId);
+          
+          // Navigate without auth data in URL params
+          navigate(`/assignment-assistant/${originalId}`);
+        } else {
+          // Fallback to basic navigation if no session
+          navigate(`/assignment-assistant/${originalId}`);
+        }
         onClose();
       } catch (error) {
         console.error('Error getting auth data:', error);
-        // Fallback to basic navigation if auth fails
         navigate(`/assignment-assistant/${originalId}`);
         onClose();
       }
@@ -43,17 +49,23 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
     if (itemType === 'class_plan' && originalId) {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        const authToken = session?.access_token || '';
-        const userId = session?.user?.id || '';
         
-        console.log('Navigating to Class Compass for class plan:', originalId);
-        
-        // Navigate with auth data in URL params
-        navigate(`/class-compass/${originalId}?auth_token=${authToken}&user_id=${userId}`);
+        if (session?.access_token) {
+          // Store auth data in sessionStorage instead of URL parameters
+          sessionStorage.setItem('calendar_auth_token', session.access_token);
+          sessionStorage.setItem('calendar_user_id', session.user?.id || '');
+          
+          console.log('Navigating to Class Compass for class plan:', originalId);
+          
+          // Navigate without auth data in URL params
+          navigate(`/class-compass/${originalId}`);
+        } else {
+          // Fallback to basic navigation if no session
+          navigate(`/class-compass/${originalId}`);
+        }
         onClose();
       } catch (error) {
         console.error('Error getting auth data:', error);
-        // Fallback to basic navigation if auth fails
         navigate(`/class-compass/${originalId}`);
         onClose();
       }

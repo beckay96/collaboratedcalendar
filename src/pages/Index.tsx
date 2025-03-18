@@ -6,12 +6,12 @@ import CalendarGrid from '@/components/calendar/CalendarGrid';
 import DayView from '@/components/calendar/DayView';
 import TaskList from '@/components/calendar/TaskList';
 import { useCalendar } from '@/context/CalendarContext';
-import { Loader2, X } from 'lucide-react';
-import { useSearchParams } from 'react-router-dom';
+import { X } from 'lucide-react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 
 const CalendarApp: React.FC = () => {
-  const { viewType, setViewType, selectedDate, setSelectedDate, loading } = useCalendar();
+  const { viewType, setViewType, selectedDate, setSelectedDate } = useCalendar();
 
   const toggleView = () => {
     if (viewType === 'month') {
@@ -57,6 +57,7 @@ const CalendarApp: React.FC = () => {
 
 const Index = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   
   // Extract auth tokens from URL if present
   useEffect(() => {
@@ -65,6 +66,7 @@ const Index = () => {
     
     if (authToken && userId) {
       console.log('Authentication parameters detected in URL');
+      
       // Set the session in Supabase with the provided token
       const setupAuth = async () => {
         try {
@@ -78,11 +80,8 @@ const Index = () => {
           // Update document title with domain name
           document.title = 'Calendar - CombineNation';
           
-          // Set the favicon if needed
-          const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
-          if (link) {
-            link.href = '/favicon.ico';
-          }
+          // Remove auth tokens from URL for security
+          navigate('/', { replace: true });
         } catch (error) {
           console.error('Error setting up authentication from URL parameters:', error);
         }
@@ -90,7 +89,7 @@ const Index = () => {
       
       setupAuth();
     }
-  }, [searchParams]);
+  }, [searchParams, navigate]);
 
   return (
     <div className="min-h-screen w-full bg-background dark:bg-gradient-to-b dark:from-background dark:to-background/80">
