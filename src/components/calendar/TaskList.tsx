@@ -1,15 +1,18 @@
 
 import React, { useState } from 'react';
 import { useCalendar } from '@/context/CalendarContext';
-import { CheckCircle, Circle, Loader2, Plus } from 'lucide-react';
+import { CheckCircle, Circle, Loader2, Plus, Trash2 } from 'lucide-react';
 import { CalendarTask, TaskStatus } from '@/types/calendar';
 import ItemDetailModal from './ItemDetailModal';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 const TaskList: React.FC = () => {
-  const { tasks, loading, updateTaskStatus, getEventCategoryColor } = useCalendar();
+  const { tasks, loading, updateTaskStatus, getEventCategoryColor, clearAllTasks } = useCalendar();
   const [filter, setFilter] = useState<'all' | 'me'>('me');
   const [selectedTask, setSelectedTask] = useState<CalendarTask | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isClearingTasks, setIsClearingTasks] = useState(false);
 
   const handleTaskToggle = (taskId: string, currentStatus: TaskStatus) => {
     const newStatus: TaskStatus = currentStatus === 'Complete' ? 'To Do' : 'Complete';
@@ -24,6 +27,24 @@ const TaskList: React.FC = () => {
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedTask(null);
+  };
+
+  const handleClearAllTasks = async () => {
+    if (!tasks || tasks.length === 0) {
+      toast.info('No tasks to clear');
+      return;
+    }
+
+    setIsClearingTasks(true);
+    try {
+      await clearAllTasks();
+      toast.success('All tasks have been cleared');
+    } catch (error) {
+      console.error('Error clearing tasks:', error);
+      toast.error('Failed to clear tasks');
+    } finally {
+      setIsClearingTasks(false);
+    }
   };
 
   if (loading) {
@@ -42,30 +63,43 @@ const TaskList: React.FC = () => {
 
   return (
     <div className="mt-4 p-3 bg-card/50 rounded-xl border border-border/50 animate-scale-in">
-      <div className="flex items-center mb-4">
-        <h3 className="text-xl font-semibold neon-text-blue">To-dos</h3>
-        <div className="ml-4 flex items-center space-x-2">
-          <button
-            className={`px-4 py-1 rounded-full text-sm transition-all ${
-              filter === 'me'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-secondary/50 text-muted-foreground'
-            }`}
-            onClick={() => setFilter('me')}
-          >
-            me
-          </button>
-          <button
-            className={`px-4 py-1 rounded-full text-sm transition-all ${
-              filter === 'all'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-secondary/50 text-muted-foreground'
-            }`}
-            onClick={() => setFilter('all')}
-          >
-            all
-          </button>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center">
+          <h3 className="text-xl font-semibold neon-text-blue">To-dos</h3>
+          <div className="ml-4 flex items-center space-x-2">
+            <button
+              className={`px-4 py-1 rounded-full text-sm transition-all ${
+                filter === 'me'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-secondary/50 text-muted-foreground'
+              }`}
+              onClick={() => setFilter('me')}
+            >
+              me
+            </button>
+            <button
+              className={`px-4 py-1 rounded-full text-sm transition-all ${
+                filter === 'all'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-secondary/50 text-muted-foreground'
+              }`}
+              onClick={() => setFilter('all')}
+            >
+              all
+            </button>
+          </div>
         </div>
+        
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleClearAllTasks}
+          disabled={isClearingTasks || !tasks || tasks.length === 0}
+          className="text-destructive hover:bg-destructive/10 border-destructive/20"
+        >
+          <Trash2 className="w-4 h-4 mr-1" />
+          Clear All
+        </Button>
       </div>
 
       <div className="space-y-2">

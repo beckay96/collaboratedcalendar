@@ -29,6 +29,7 @@ interface CalendarContextType {
   locationName: string | null;
   refreshWeather: () => Promise<void>;
   getEventCategoryColor: (category: string) => string;
+  clearAllTasks: () => Promise<void>;
 }
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
@@ -140,6 +141,18 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
     }
   };
 
+  const clearAllTasks = async () => {
+    try {
+      console.log('Clearing all tasks...');
+      setTasks([]);
+      toast.success('All tasks cleared');
+    } catch (error) {
+      console.error('Error clearing tasks:', error);
+      toast.error('Failed to clear tasks');
+      throw error;
+    }
+  };
+
   return (
     <CalendarContext.Provider
       value={{
@@ -159,7 +172,8 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
         multiDayWeatherData,
         locationName,
         refreshWeather,
-        getEventCategoryColor
+        getEventCategoryColor,
+        clearAllTasks
       }}
     >
       {children}
