@@ -178,6 +178,7 @@ export const fetchAllCalendarItems = async (): Promise<{
     const lessons = await fetchLessons();
     const classLessonPlans = await fetchClassLessonPlans();
 
+    // Return real data from the database, no mock data
     return {
       events: [...events, ...taskEvents, ...lessons, ...classLessonPlans],
       tasks

@@ -35,6 +35,9 @@ const TaskList: React.FC = () => {
     );
   }
 
+  // Ensure we're filtering empty tasks
+  const filteredTasks = tasks || [];
+
   return (
     <div className="mt-4 p-3 bg-card/50 rounded-xl border border-border/50 animate-scale-in">
       <div className="flex items-center mb-4">
@@ -64,12 +67,12 @@ const TaskList: React.FC = () => {
       </div>
 
       <div className="space-y-2">
-        {tasks.length === 0 ? (
+        {filteredTasks.length === 0 ? (
           <div className="text-muted-foreground text-center py-4">
             No tasks found
           </div>
         ) : (
-          tasks.map((task, index) => (
+          filteredTasks.map((task, index) => (
             <TaskItem
               key={task.id || `generated-task-${index}`}
               task={task}
