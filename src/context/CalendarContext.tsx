@@ -1,9 +1,16 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { CalendarEvent, CalendarTask, CalendarViewType, TaskStatus } from '@/types/calendar';
 import { fetchAllCalendarItems } from '@/services/calendarService';
 import { mockEvents, mockTasks } from '@/utils/mock-data';
 import { toast } from 'sonner';
-import { WeatherData, fetchCurrentWeather, getUserLocation, getLocationName } from '@/services/weatherService';
+import { 
+  WeatherData, 
+  fetchCurrentWeather, 
+  getUserLocation, 
+  getLocationName,
+  fetchMultiDayWeather
+} from '@/services/weatherService';
 
 interface CalendarContextType {
   currentDate: Date;
@@ -19,6 +26,7 @@ interface CalendarContextType {
   updateTaskStatus: (taskId: string, status: TaskStatus) => Promise<void>;
   updateEventRsvp: (eventId: string, status: 'attending' | 'not_attending' | 'maybe') => Promise<void>;
   weatherData: WeatherData | null;
+  multiDayWeatherData: WeatherData[];
   locationName: string | null;
   refreshWeather: () => Promise<void>;
 }
@@ -45,6 +53,7 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
+  const [multiDayWeatherData, setMultiDayWeatherData] = useState<WeatherData[]>([]);
   const [locationName, setLocationName] = useState<string | null>(null);
 
   const fetchCalendarData = async () => {
@@ -68,9 +77,11 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
       const coords = await getUserLocation();
       const weather = await fetchCurrentWeather(coords.latitude, coords.longitude);
       const location = await getLocationName(coords.latitude, coords.longitude);
+      const multiDayWeather = await fetchMultiDayWeather(coords.latitude, coords.longitude);
       
       setWeatherData(weather);
       setLocationName(location);
+      setMultiDayWeatherData(multiDayWeather);
     } catch (error) {
       console.error("Error fetching weather data:", error);
       // Don't show error toast as it might be intrusive if user denied location permission
@@ -145,6 +156,7 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
         updateTaskStatus,
         updateEventRsvp,
         weatherData,
+        multiDayWeatherData,
         locationName,
         refreshWeather
       }}

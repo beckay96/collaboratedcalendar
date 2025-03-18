@@ -1,12 +1,13 @@
 
 import React, { useState } from 'react';
-import { format } from 'date-fns';
+import { format, isSameDay } from 'date-fns';
 import { useCalendar } from '@/context/CalendarContext';
 import { getCalendarDays, getWeekDaysNames } from '@/utils/calendar-utils';
 import { getEventCategoryColor } from '@/utils/mock-data';
 import { Loader2, MapPin } from 'lucide-react';
 import { CalendarEvent } from '@/types/calendar';
 import ItemDetailModal from './ItemDetailModal';
+import { WeatherData } from '@/services/weatherService';
 
 const CalendarGrid: React.FC = () => {
   const {
@@ -17,6 +18,7 @@ const CalendarGrid: React.FC = () => {
     setViewType,
     loading,
     weatherData,
+    multiDayWeatherData,
     locationName
   } = useCalendar();
   
@@ -40,6 +42,22 @@ const CalendarGrid: React.FC = () => {
     setIsModalOpen(false);
     setSelectedEvent(null);
   };
+
+  // Function to find weather data for a specific date
+  const getWeatherForDate = (date: Date): WeatherData | null => {
+    if (!multiDayWeatherData || multiDayWeatherData.length === 0) return null;
+    
+    // Find matching weather data for this date
+    const weatherForDay = multiDayWeatherData.find(weather => 
+      weather.date && isSameDay(weather.date, date)
+    );
+    
+    // If we have weather data for this day, return it
+    if (weatherForDay) return weatherForDay;
+    
+    // If no weather data for this specific day, return null
+    return null;
+  };
   
   if (loading) {
     return <div className="flex items-center justify-center h-64">
@@ -49,9 +67,6 @@ const CalendarGrid: React.FC = () => {
   }
   
   const today = new Date();
-  const todayIndex = calendarDays.findIndex(day => 
-    day.isToday && day.date.getDate() === today.getDate()
-  );
   
   return <div className="w-full animate-scale-in px-0 max-1000px">
       {weatherData && locationName && (
@@ -83,8 +98,10 @@ const CalendarGrid: React.FC = () => {
         const hasTasks = day.tasks.length > 0;
         const totalItems = day.events.length + day.tasks.length;
         
+        // Get weather for this specific day
+        const dayWeather = getWeatherForDate(day.date);
+        
         // For today, use the actual weather data
-        // For simplicity, other days don't show weather icons
         const isToday = day.isToday && day.date.getDate() === today.getDate();
         
         return <div key={index} className={`calendar-cell rounded-lg border hover:border-primary/50 cursor-pointer
@@ -97,16 +114,16 @@ const CalendarGrid: React.FC = () => {
                   {format(day.date, 'd')}
                 </span>
                 
-                {/* Weather icon only for today */}
-                {isToday && weatherData && (
+                {/* Weather icon for this day if available */}
+                {dayWeather && (
                   <span className="text-xs rounded-full flex items-center justify-center text-muted-foreground">
-                    {weatherData.temp}°
-                    {weatherData.condition === 'sunny' && '☀️'}
-                    {weatherData.condition === 'partly-cloudy' && '⛅'}
-                    {weatherData.condition === 'cloudy' && '☁️'}
-                    {weatherData.condition === 'rainy' && '🌧️'}
-                    {weatherData.condition === 'stormy' && '⛈️'}
-                    {weatherData.condition === 'snowy' && '❄️'}
+                    {dayWeather.temp}°
+                    {dayWeather.condition === 'sunny' && '☀️'}
+                    {dayWeather.condition === 'partly-cloudy' && '⛅'}
+                    {dayWeather.condition === 'cloudy' && '☁️'}
+                    {dayWeather.condition === 'rainy' && '🌧️'}
+                    {dayWeather.condition === 'stormy' && '⛈️'}
+                    {dayWeather.condition === 'snowy' && '❄️'}
                   </span>
                 )}
               </div>

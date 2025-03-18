@@ -7,6 +7,7 @@ export interface WeatherData {
   temp: number;
   condition: WeatherCondition;
   location?: string;
+  date?: Date;
 }
 
 interface GeoLocationCoords {
@@ -85,6 +86,58 @@ export const fetchCurrentWeather = async (latitude: number, longitude: number): 
       temp: 22,
       condition: 'partly-cloudy',
     };
+  }
+};
+
+// Fetch weather data for multiple days (past and future)
+export const fetchMultiDayWeather = async (latitude: number, longitude: number): Promise<WeatherData[]> => {
+  try {
+    // Calculate dates for API request
+    const today = new Date();
+    const pastDate = new Date();
+    pastDate.setDate(today.getDate() - 7); // Get data for past 7 days
+    
+    const futureDate = new Date();
+    futureDate.setDate(today.getDate() + 7); // Get data for future 7 days
+    
+    const startDate = pastDate.toISOString().split('T')[0];
+    const endDate = futureDate.toISOString().split('T')[0];
+
+    // Fetch historical + forecast data
+    const response = await fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=temperature_2m_max,weather_code&timezone=auto&start_date=${startDate}&end_date=${endDate}`
+    );
+
+    if (!response.ok) {
+      throw new Error('Multi-day weather data fetch failed');
+    }
+
+    const data = await response.json();
+    
+    // Process data into WeatherData[] format
+    const weatherDataArray: WeatherData[] = [];
+    
+    if (data.daily && data.daily.time && data.daily.time.length > 0) {
+      for (let i = 0; i < data.daily.time.length; i++) {
+        const dateStr = data.daily.time[i];
+        const temp = Math.round(data.daily.temperature_2m_max[i]);
+        const weatherCode = data.daily.weather_code[i];
+        
+        weatherDataArray.push({
+          date: new Date(dateStr),
+          temp: temp,
+          condition: mapWeatherCode(weatherCode)
+        });
+      }
+    }
+    
+    return weatherDataArray;
+    
+  } catch (error) {
+    console.error('Error fetching multi-day weather:', error);
+    // Don't show toast here to avoid multiple error messages
+    // Return an empty array instead of dummy data
+    return [];
   }
 };
 
