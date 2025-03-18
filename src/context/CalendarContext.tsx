@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { CalendarEvent, CalendarTask, CalendarViewType, TaskStatus, EventCategory } from '@/types/calendar';
 import { fetchAllCalendarItems } from '@/services/calendarService';
@@ -57,6 +58,7 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
   const [multiDayWeatherData, setMultiDayWeatherData] = useState<WeatherData[]>([]);
   const [locationName, setLocationName] = useState<string | null>(null);
   const [initialDataLoaded, setInitialDataLoaded] = useState<boolean>(false);
+  const [tasksCleared, setTasksCleared] = useState<boolean>(false);
 
   const fetchCalendarData = async () => {
     if (!initialDataLoaded) {
@@ -67,14 +69,27 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
       console.log('Fetching calendar data...');
       const { events: fetchedEvents, tasks: fetchedTasks } = await fetchAllCalendarItems();
       console.log('Fetched tasks:', fetchedTasks);
-      setEvents(fetchedEvents);
-      setTasks(fetchedTasks);
+      
+      // Only set tasks if they haven't been cleared or if we're forcing a refresh
+      if (!tasksCleared) {
+        setEvents(fetchedEvents);
+        setTasks(fetchedTasks);
+      } else {
+        // If tasks were cleared, only update events
+        setEvents(fetchedEvents);
+      }
+      
       setInitialDataLoaded(true);
     } catch (error) {
       console.error("Error fetching calendar data:", error);
       toast.error("Failed to load calendar data");
-      setEvents([]);
-      setTasks([]);
+      
+      if (!tasksCleared) {
+        setEvents([]);
+        setTasks([]);
+      } else {
+        setEvents([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -103,6 +118,8 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
   }, [initialDataLoaded]);
 
   const refreshCalendar = async () => {
+    // Reset the tasksCleared flag when explicitly refreshing
+    setTasksCleared(false);
     await fetchCalendarData();
   };
 
@@ -145,6 +162,8 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
     try {
       console.log('Clearing all tasks...');
       setTasks([]);
+      // Set the flag to prevent tasks from being reloaded
+      setTasksCleared(true);
       toast.success('All tasks cleared');
     } catch (error) {
       console.error('Error clearing tasks:', error);
