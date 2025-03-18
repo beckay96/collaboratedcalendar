@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { EventCategory } from '@/types/calendar';
-import { getEventCategoryColor } from '@/utils/mock-data';
+import { getEventCategoryColor } from '@/utils/category-utils';
 
 interface ItemCategoryBadgeProps {
   category: EventCategory;

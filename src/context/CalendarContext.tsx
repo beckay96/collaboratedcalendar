@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { CalendarEvent, CalendarTask, CalendarViewType, TaskStatus, EventCategory } from '@/types/calendar';
 import { fetchAllCalendarItems } from '@/services/calendarService';
@@ -10,20 +9,7 @@ import {
   getLocationName,
   fetchMultiDayWeather
 } from '@/services/weatherService';
-
-// Helper function to get event category color
-export function getEventCategoryColor(category: EventCategory): string {
-  switch (category) {
-    case 'work':
-      return 'bg-event-work text-white';
-    case 'personal':
-      return 'bg-event-personal text-white';
-    case 'important':
-      return 'bg-event-important text-white';
-    default:
-      return 'bg-event-default text-white';
-  }
-}
+import { getEventCategoryColor } from '@/utils/category-utils';
 
 interface CalendarContextType {
   currentDate: Date;
@@ -42,6 +28,7 @@ interface CalendarContextType {
   multiDayWeatherData: WeatherData[];
   locationName: string | null;
   refreshWeather: () => Promise<void>;
+  getEventCategoryColor: (category: string) => string;
 }
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
@@ -170,7 +157,8 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
         weatherData,
         multiDayWeatherData,
         locationName,
-        refreshWeather
+        refreshWeather,
+        getEventCategoryColor
       }}
     >
       {children}
