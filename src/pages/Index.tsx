@@ -13,10 +13,16 @@ import { supabase } from '@/integrations/supabase/client';
 const CalendarApp: React.FC = () => {
   const { viewType, setViewType, selectedDate, setSelectedDate, refreshCalendar } = useCalendar();
 
-  // Force refresh on mount to ensure we're not using any stale or mock data
+  // Only refresh once when the component first mounts
   useEffect(() => {
-    refreshCalendar();
-  }, [refreshCalendar]);
+    const initialFetch = async () => {
+      await refreshCalendar();
+      console.log('Initial calendar refresh completed');
+    };
+    
+    initialFetch();
+    // Remove refreshCalendar from dependencies to prevent loops
+  }, []); // Empty dependency array means it only runs once
 
   const toggleView = () => {
     if (viewType === 'month') {

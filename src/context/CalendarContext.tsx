@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { CalendarEvent, CalendarTask, CalendarViewType, TaskStatus, EventCategory } from '@/types/calendar';
 import { fetchAllCalendarItems } from '@/services/calendarService';
@@ -56,19 +55,23 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [multiDayWeatherData, setMultiDayWeatherData] = useState<WeatherData[]>([]);
   const [locationName, setLocationName] = useState<string | null>(null);
+  const [initialDataLoaded, setInitialDataLoaded] = useState<boolean>(false);
 
   const fetchCalendarData = async () => {
-    setLoading(true);
+    if (!initialDataLoaded) {
+      setLoading(true);
+    }
+    
     try {
       console.log('Fetching calendar data...');
       const { events: fetchedEvents, tasks: fetchedTasks } = await fetchAllCalendarItems();
       console.log('Fetched tasks:', fetchedTasks);
       setEvents(fetchedEvents);
       setTasks(fetchedTasks);
+      setInitialDataLoaded(true);
     } catch (error) {
       console.error("Error fetching calendar data:", error);
       toast.error("Failed to load calendar data");
-      // Explicitly set to empty arrays to ensure no mock data is used
       setEvents([]);
       setTasks([]);
     } finally {
@@ -88,14 +91,15 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
       setMultiDayWeatherData(multiDayWeather);
     } catch (error) {
       console.error("Error fetching weather data:", error);
-      // Don't show error toast as it might be intrusive if user denied location permission
     }
   };
 
   useEffect(() => {
-    fetchCalendarData();
-    fetchWeatherData();
-  }, []);
+    if (!initialDataLoaded) {
+      fetchCalendarData();
+      fetchWeatherData();
+    }
+  }, [initialDataLoaded]);
 
   const refreshCalendar = async () => {
     await fetchCalendarData();
@@ -107,7 +111,6 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
 
   const updateTaskStatus = async (taskId: string, status: TaskStatus) => {
     try {
-      // Update task status in the UI immediately
       const updatedTasks = tasks.map(task => 
         task.id === taskId ? { 
           ...task, 
@@ -118,10 +121,7 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
       setTasks(updatedTasks);
       toast.success(`Task marked as ${status}`);
       
-      // In a real implementation, you would call an API to update the task status in the database
       console.log('Updating task status:', taskId, status);
-      
-      // For now, we don't need to refresh as we've updated the UI already
     } catch (error) {
       console.error('Error updating task status:', error);
       toast.error('Failed to update task');
@@ -131,11 +131,8 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
 
   const updateEventRsvp = async (eventId: string, status: 'attending' | 'not_attending' | 'maybe') => {
     try {
-      // In a real implementation, you would call an API to update the RSVP status
       console.log('Updating RSVP for event:', eventId, 'to', status);
       toast.success(`RSVP updated to ${status}`);
-      
-      // For now, we don't need to refresh as we've updated the UI already
     } catch (error) {
       console.error('Error updating RSVP:', error);
       toast.error('Failed to update RSVP');
