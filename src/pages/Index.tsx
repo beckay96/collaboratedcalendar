@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { CalendarProvider } from '@/context/CalendarContext';
 import CalendarHeader from '@/components/calendar/CalendarHeader';
@@ -7,7 +6,7 @@ import DayView from '@/components/calendar/DayView';
 import TaskList from '@/components/calendar/TaskList';
 import { useCalendar } from '@/context/CalendarContext';
 import { X } from 'lucide-react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 
 const CalendarApp: React.FC = () => {
@@ -57,7 +56,6 @@ const CalendarApp: React.FC = () => {
 
 const Index = () => {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
   
   // Extract auth tokens from URL if present
   useEffect(() => {
@@ -80,8 +78,9 @@ const Index = () => {
           // Update document title with domain name
           document.title = 'Calendar - CombineNation';
           
-          // Remove auth tokens from URL for security
-          navigate('/', { replace: true });
+          // Also store tokens in sessionStorage for internal navigation
+          sessionStorage.setItem('calendar_auth_token', authToken);
+          sessionStorage.setItem('calendar_user_id', userId);
         } catch (error) {
           console.error('Error setting up authentication from URL parameters:', error);
         }
@@ -89,7 +88,7 @@ const Index = () => {
       
       setupAuth();
     }
-  }, [searchParams, navigate]);
+  }, [searchParams]);
 
   return (
     <div className="min-h-screen w-full bg-background dark:bg-gradient-to-b dark:from-background dark:to-background/80">

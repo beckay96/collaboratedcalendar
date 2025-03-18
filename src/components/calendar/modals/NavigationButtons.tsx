@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ExternalLink } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 
 interface NavigationButtonsProps {
@@ -17,25 +17,32 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
   onClose 
 }) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const navigateToAssistant = async () => {
     if (itemType === 'lesson' && originalId) {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        // First check if we have auth token from URL
+        let authToken = searchParams.get('auth_token');
+        let userId = searchParams.get('user_id');
         
-        if (session?.access_token) {
-          // Store auth data in sessionStorage instead of URL parameters
-          sessionStorage.setItem('calendar_auth_token', session.access_token);
-          sessionStorage.setItem('calendar_user_id', session.user?.id || '');
-          
-          console.log('Navigating to Assignment Assistant for lesson:', originalId);
-          
-          // Navigate without auth data in URL params
-          navigate(`/assignment-assistant/${originalId}`);
-        } else {
-          // Fallback to basic navigation if no session
-          navigate(`/assignment-assistant/${originalId}`);
+        // If not in URL, try from sessionStorage
+        if (!authToken || !userId) {
+          authToken = sessionStorage.getItem('calendar_auth_token') || '';
+          userId = sessionStorage.getItem('calendar_user_id') || '';
         }
+        
+        // If still no tokens, try to get from current session
+        if (!authToken || !userId) {
+          const { data: { session } } = await supabase.auth.getSession();
+          authToken = session?.access_token || '';
+          userId = session?.user?.id || '';
+        }
+        
+        console.log('Navigating to Assignment Assistant for lesson:', originalId);
+        
+        // Navigate with auth data in URL params
+        navigate(`/assignment-assistant/${originalId}?auth_token=${authToken}&user_id=${userId}`);
         onClose();
       } catch (error) {
         console.error('Error getting auth data:', error);
@@ -48,21 +55,27 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
   const navigateToClassCompass = async () => {
     if (itemType === 'class_plan' && originalId) {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        // First check if we have auth token from URL
+        let authToken = searchParams.get('auth_token');
+        let userId = searchParams.get('user_id');
         
-        if (session?.access_token) {
-          // Store auth data in sessionStorage instead of URL parameters
-          sessionStorage.setItem('calendar_auth_token', session.access_token);
-          sessionStorage.setItem('calendar_user_id', session.user?.id || '');
-          
-          console.log('Navigating to Class Compass for class plan:', originalId);
-          
-          // Navigate without auth data in URL params
-          navigate(`/class-compass/${originalId}`);
-        } else {
-          // Fallback to basic navigation if no session
-          navigate(`/class-compass/${originalId}`);
+        // If not in URL, try from sessionStorage
+        if (!authToken || !userId) {
+          authToken = sessionStorage.getItem('calendar_auth_token') || '';
+          userId = sessionStorage.getItem('calendar_user_id') || '';
         }
+        
+        // If still no tokens, try to get from current session
+        if (!authToken || !userId) {
+          const { data: { session } } = await supabase.auth.getSession();
+          authToken = session?.access_token || '';
+          userId = session?.user?.id || '';
+        }
+        
+        console.log('Navigating to Class Compass for class plan:', originalId);
+        
+        // Navigate with auth data in URL params
+        navigate(`/class-compass/${originalId}?auth_token=${authToken}&user_id=${userId}`);
         onClose();
       } catch (error) {
         console.error('Error getting auth data:', error);
