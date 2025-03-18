@@ -74,6 +74,15 @@ const Index = () => {
             refresh_token: ''
           });
           console.log('Auth session established for user:', userId);
+          
+          // Update document title with domain name
+          document.title = 'Calendar - CombineNation';
+          
+          // Set the favicon if needed
+          const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+          if (link) {
+            link.href = '/favicon.ico';
+          }
         } catch (error) {
           console.error('Error setting up authentication from URL parameters:', error);
         }

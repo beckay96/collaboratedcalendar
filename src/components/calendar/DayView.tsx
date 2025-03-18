@@ -2,17 +2,25 @@
 import React, { useState } from 'react';
 import { addHours, format, isSameDay, startOfDay } from 'date-fns';
 import { useCalendar } from '@/context/CalendarContext';
-import { getEventCategoryColor, mockWeatherData } from '@/utils/mock-data';
-import { Loader2 } from 'lucide-react';
+import { getEventCategoryColor } from '@/utils/mock-data';
+import { Loader2, MapPin, RefreshCcw } from 'lucide-react';
 import { CalendarEvent } from '@/types/calendar';
 import ItemDetailModal from './ItemDetailModal';
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
 const DayView: React.FC = () => {
-  const { selectedDate, events, loading } = useCalendar();
+  const { 
+    selectedDate, 
+    events, 
+    loading, 
+    weatherData, 
+    locationName,
+    refreshWeather
+  } = useCalendar();
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [refreshingWeather, setRefreshingWeather] = useState(false);
   
   if (!selectedDate) return null;
   
@@ -28,8 +36,6 @@ const DayView: React.FC = () => {
   const dayEvents = events.filter(event => isSameDay(event.start, selectedDate));
   const allDayEvents = dayEvents.filter(event => event.allDay);
   const timeEvents = dayEvents.filter(event => !event.allDay);
-  const dateNumber = selectedDate.getDate();
-  const weatherData = mockWeatherData[dateNumber % 10];
   
   // Get current time for time indicator
   const now = new Date();
@@ -47,8 +53,45 @@ const DayView: React.FC = () => {
     setSelectedEvent(null);
   };
   
+  const handleRefreshWeather = async () => {
+    setRefreshingWeather(true);
+    await refreshWeather();
+    setRefreshingWeather(false);
+  };
+  
   return (
     <div className="w-full h-full overflow-y-auto animate-fade-in pb-20">
+      {/* Weather data display */}
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center text-sm">
+          {weatherData && locationName ? (
+            <>
+              <MapPin className="h-4 w-4 mr-1" />
+              <span className="text-muted-foreground">{locationName}:</span>
+              <span className="ml-2 flex items-center font-medium">
+                {weatherData.temp}°C
+                {weatherData.condition === 'sunny' && '☀️'}
+                {weatherData.condition === 'partly-cloudy' && '⛅'}
+                {weatherData.condition === 'cloudy' && '☁️'}
+                {weatherData.condition === 'rainy' && '🌧️'}
+                {weatherData.condition === 'stormy' && '⛈️'}
+                {weatherData.condition === 'snowy' && '❄️'}
+              </span>
+            </>
+          ) : (
+            <span className="text-muted-foreground">Weather data unavailable</span>
+          )}
+        </div>
+        <button 
+          onClick={handleRefreshWeather}
+          className="flex items-center text-xs text-muted-foreground hover:text-foreground transition-colors"
+          disabled={refreshingWeather}
+        >
+          <RefreshCcw className={`h-3 w-3 mr-1 ${refreshingWeather ? 'animate-spin' : ''}`} />
+          Refresh
+        </button>
+      </div>
+      
       {/* All day events section */}
       {allDayEvents.length > 0 && (
         <div className="mb-4">
@@ -108,14 +151,16 @@ const DayView: React.FC = () => {
                 {format(timeSlot, 'h a')}
               </div>
               
-              {/* Weather info for specific hours */}
-              {(hour === 9 || hour === 12 || hour === 15 || hour === 18) && weatherData && (
+              {/* Weather indicators at key times of day if it's today */}
+              {isSameDay(selectedDate, now) && weatherData && (hour === 9 || hour === 12 || hour === 15 || hour === 18) && (
                 <div className="absolute right-2 top-0 -translate-y-1/2 text-xs text-muted-foreground">
                   {weatherData.temp}°
                   {weatherData.condition === 'sunny' && '☀️'}
-                  {weatherData.condition === 'rainy' && '🌧️'}
                   {weatherData.condition === 'partly-cloudy' && '⛅'}
                   {weatherData.condition === 'cloudy' && '☁️'}
+                  {weatherData.condition === 'rainy' && '🌧️'}
+                  {weatherData.condition === 'stormy' && '⛈️'}
+                  {weatherData.condition === 'snowy' && '❄️'}
                 </div>
               )}
               

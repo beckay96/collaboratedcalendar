@@ -1,9 +1,9 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { CalendarEvent, CalendarTask, CalendarViewType, TaskStatus } from '@/types/calendar';
 import { fetchAllCalendarItems } from '@/services/calendarService';
 import { mockEvents, mockTasks } from '@/utils/mock-data';
 import { toast } from 'sonner';
+import { WeatherData, fetchCurrentWeather, getUserLocation, getLocationName } from '@/services/weatherService';
 
 interface CalendarContextType {
   currentDate: Date;
@@ -18,6 +18,9 @@ interface CalendarContextType {
   refreshCalendar: () => Promise<void>;
   updateTaskStatus: (taskId: string, status: TaskStatus) => Promise<void>;
   updateEventRsvp: (eventId: string, status: 'attending' | 'not_attending' | 'maybe') => Promise<void>;
+  weatherData: WeatherData | null;
+  locationName: string | null;
+  refreshWeather: () => Promise<void>;
 }
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
@@ -41,6 +44,8 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
   const [viewType, setViewType] = useState<CalendarViewType>('month');
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
+  const [locationName, setLocationName] = useState<string | null>(null);
 
   const fetchCalendarData = async () => {
     setLoading(true);
@@ -58,12 +63,31 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
     }
   };
 
+  const fetchWeatherData = async () => {
+    try {
+      const coords = await getUserLocation();
+      const weather = await fetchCurrentWeather(coords.latitude, coords.longitude);
+      const location = await getLocationName(coords.latitude, coords.longitude);
+      
+      setWeatherData(weather);
+      setLocationName(location);
+    } catch (error) {
+      console.error("Error fetching weather data:", error);
+      // Don't show error toast as it might be intrusive if user denied location permission
+    }
+  };
+
   useEffect(() => {
     fetchCalendarData();
+    fetchWeatherData();
   }, []);
 
   const refreshCalendar = async () => {
     await fetchCalendarData();
+  };
+
+  const refreshWeather = async () => {
+    await fetchWeatherData();
   };
 
   const updateTaskStatus = async (taskId: string, status: TaskStatus) => {
@@ -119,7 +143,10 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
         loading,
         refreshCalendar,
         updateTaskStatus,
-        updateEventRsvp
+        updateEventRsvp,
+        weatherData,
+        locationName,
+        refreshWeather
       }}
     >
       {children}

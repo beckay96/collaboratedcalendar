@@ -1,12 +1,13 @@
+
 import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { useCalendar } from '@/context/CalendarContext';
 import { getCalendarDays, getWeekDaysNames } from '@/utils/calendar-utils';
 import { getEventCategoryColor } from '@/utils/mock-data';
-import { mockWeatherData } from '@/utils/mock-data';
-import { Loader2 } from 'lucide-react';
+import { Loader2, MapPin } from 'lucide-react';
 import { CalendarEvent } from '@/types/calendar';
 import ItemDetailModal from './ItemDetailModal';
+
 const CalendarGrid: React.FC = () => {
   const {
     currentDate,
@@ -14,32 +15,61 @@ const CalendarGrid: React.FC = () => {
     tasks,
     setSelectedDate,
     setViewType,
-    loading
+    loading,
+    weatherData,
+    locationName
   } = useCalendar();
+  
   const calendarDays = getCalendarDays(currentDate, events, tasks);
   const weekDays = getWeekDaysNames();
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
   const handleDayClick = (date: Date) => {
     setSelectedDate(date);
     setViewType('day');
   };
+  
   const handleEventClick = (event: CalendarEvent, e: React.MouseEvent) => {
     e.stopPropagation();
     setSelectedEvent(event);
     setIsModalOpen(true);
   };
+  
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedEvent(null);
   };
+  
   if (loading) {
     return <div className="flex items-center justify-center h-64">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <span className="ml-2 text-muted-foreground">Loading calendar...</span>
       </div>;
   }
+  
+  const today = new Date();
+  const todayIndex = calendarDays.findIndex(day => 
+    day.isToday && day.date.getDate() === today.getDate()
+  );
+  
   return <div className="w-full animate-scale-in px-0 max-1000px">
+      {weatherData && locationName && (
+        <div className="mb-4 flex items-center justify-start text-sm text-muted-foreground">
+          <MapPin className="h-4 w-4 mr-1" />
+          <span>{locationName}:</span>
+          <span className="ml-2 flex items-center">
+            {weatherData.temp}°C
+            {weatherData.condition === 'sunny' && '☀️'}
+            {weatherData.condition === 'partly-cloudy' && '⛅'}
+            {weatherData.condition === 'cloudy' && '☁️'}
+            {weatherData.condition === 'rainy' && '🌧️'}
+            {weatherData.condition === 'stormy' && '⛈️'}
+            {weatherData.condition === 'snowy' && '❄️'}
+          </span>
+        </div>
+      )}
+      
       <div className="grid grid-cols-7 mb-2">
         {weekDays.map((day, index) => <div key={index} className="text-center font-medium text-muted-foreground">
             {day}
@@ -52,8 +82,11 @@ const CalendarGrid: React.FC = () => {
         const hasEvents = day.events.length > 0;
         const hasTasks = day.tasks.length > 0;
         const totalItems = day.events.length + day.tasks.length;
-        // Use mock weather data for some days
-        const weatherData = mockWeatherData[dayOfMonth % 10];
+        
+        // For today, use the actual weather data
+        // For simplicity, other days don't show weather icons
+        const isToday = day.isToday && day.date.getDate() === today.getDate();
+        
         return <div key={index} className={`calendar-cell rounded-lg border hover:border-primary/50 cursor-pointer
                 ${day.isToday ? 'border-primary' : 'border-transparent'}
                 ${!day.isCurrentMonth ? 'opacity-40' : ''}
@@ -64,14 +97,18 @@ const CalendarGrid: React.FC = () => {
                   {format(day.date, 'd')}
                 </span>
                 
-                {/* Weather icon if available */}
-                {weatherData && <span className="text-xs rounded-full flex items-center justify-center text-muted-foreground">
+                {/* Weather icon only for today */}
+                {isToday && weatherData && (
+                  <span className="text-xs rounded-full flex items-center justify-center text-muted-foreground">
                     {weatherData.temp}°
                     {weatherData.condition === 'sunny' && '☀️'}
-                    {weatherData.condition === 'rainy' && '🌧️'}
                     {weatherData.condition === 'partly-cloudy' && '⛅'}
                     {weatherData.condition === 'cloudy' && '☁️'}
-                  </span>}
+                    {weatherData.condition === 'rainy' && '🌧️'}
+                    {weatherData.condition === 'stormy' && '⛈️'}
+                    {weatherData.condition === 'snowy' && '❄️'}
+                  </span>
+                )}
               </div>
               
               {/* Event indicators with item type badges */}
@@ -98,4 +135,5 @@ const CalendarGrid: React.FC = () => {
       <ItemDetailModal item={selectedEvent} isOpen={isModalOpen} onClose={closeModal} />
     </div>;
 };
+
 export default CalendarGrid;
