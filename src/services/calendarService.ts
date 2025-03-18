@@ -173,18 +173,22 @@ export const fetchAllCalendarItems = async (): Promise<{
   tasks: CalendarTask[]
 }> => {
   try {
+    console.log('In fetchAllCalendarItems...');
     const events = await fetchEvents();
     const { events: taskEvents, tasks } = await fetchTasks();
     const lessons = await fetchLessons();
     const classLessonPlans = await fetchClassLessonPlans();
 
-    // Return real data from the database, no mock data
+    console.log('Real tasks from database:', tasks);
+    
+    // Return real data from the database, ensure no mock data
     return {
       events: [...events, ...taskEvents, ...lessons, ...classLessonPlans],
-      tasks
+      tasks: tasks || [] // Ensure we always return an array, even if empty
     };
   } catch (error) {
     console.error('Error fetching all calendar items:', error);
+    // Return empty arrays to prevent mock data from being used
     return { events: [], tasks: [] };
   }
 };

@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { CalendarProvider } from '@/context/CalendarContext';
 import CalendarHeader from '@/components/calendar/CalendarHeader';
@@ -10,7 +11,12 @@ import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 
 const CalendarApp: React.FC = () => {
-  const { viewType, setViewType, selectedDate, setSelectedDate } = useCalendar();
+  const { viewType, setViewType, selectedDate, setSelectedDate, refreshCalendar } = useCalendar();
+
+  // Force refresh on mount to ensure we're not using any stale or mock data
+  useEffect(() => {
+    refreshCalendar();
+  }, [refreshCalendar]);
 
   const toggleView = () => {
     if (viewType === 'month') {

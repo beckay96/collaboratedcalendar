@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { CalendarEvent, CalendarTask, CalendarViewType, TaskStatus, EventCategory } from '@/types/calendar';
 import { fetchAllCalendarItems } from '@/services/calendarService';
@@ -59,12 +60,15 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
   const fetchCalendarData = async () => {
     setLoading(true);
     try {
+      console.log('Fetching calendar data...');
       const { events: fetchedEvents, tasks: fetchedTasks } = await fetchAllCalendarItems();
+      console.log('Fetched tasks:', fetchedTasks);
       setEvents(fetchedEvents);
       setTasks(fetchedTasks);
     } catch (error) {
       console.error("Error fetching calendar data:", error);
       toast.error("Failed to load calendar data");
+      // Explicitly set to empty arrays to ensure no mock data is used
       setEvents([]);
       setTasks([]);
     } finally {

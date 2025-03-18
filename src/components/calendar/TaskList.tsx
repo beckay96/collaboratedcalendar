@@ -35,7 +35,9 @@ const TaskList: React.FC = () => {
     );
   }
 
-  // Ensure we're filtering empty tasks
+  console.log('Tasks from context:', tasks);
+
+  // Always work with an empty array if tasks is undefined
   const filteredTasks = tasks || [];
 
   return (
