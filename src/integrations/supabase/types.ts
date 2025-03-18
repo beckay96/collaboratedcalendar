@@ -189,6 +189,27 @@ export type Database = {
         }
         Relationships: []
       }
+      art_created_by_users: {
+        Row: {
+          art_url: string | null
+          created_at: string
+          id: number
+          user_id: string | null
+        }
+        Insert: {
+          art_url?: string | null
+          created_at?: string
+          id?: number
+          user_id?: string | null
+        }
+        Update: {
+          art_url?: string | null
+          created_at?: string
+          id?: number
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       attendance_archway: {
         Row: {
           attendance_type: string | null
@@ -3299,6 +3320,13 @@ export type Database = {
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "lesson_snippets_templates_grade_level_fkey"
+            columns: ["grade_level"]
+            isOneToOne: false
+            referencedRelation: "grade_levels"
+            referencedColumns: ["id"]
+          },
         ]
       }
       lessons: {
@@ -3420,6 +3448,7 @@ export type Database = {
           description: string | null
           difficulty_level: number | null
           emoji: string | null
+          grade_level: number | null
           group_project: boolean | null
           guided_lesson: boolean | null
           homework: boolean | null
@@ -3436,6 +3465,7 @@ export type Database = {
           description?: string | null
           difficulty_level?: number | null
           emoji?: string | null
+          grade_level?: number | null
           group_project?: boolean | null
           guided_lesson?: boolean | null
           homework?: boolean | null
@@ -3452,6 +3482,7 @@ export type Database = {
           description?: string | null
           difficulty_level?: number | null
           emoji?: string | null
+          grade_level?: number | null
           group_project?: boolean | null
           guided_lesson?: boolean | null
           homework?: boolean | null
@@ -3463,7 +3494,15 @@ export type Database = {
           subject_id?: number | null
           title?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "lessons_templates_grade_level_fkey"
+            columns: ["grade_level"]
+            isOneToOne: false
+            referencedRelation: "grade_levels"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       letter_launch_games: {
         Row: {
@@ -6122,6 +6161,42 @@ export type Database = {
           },
         ]
       }
+      treasure_details: {
+        Row: {
+          created_at: string
+          game_types: string[] | null
+          id: number
+          lesson_types:
+            | Database["public"]["Enums"]["lesson_snippet_types"][]
+            | null
+          reward_types: string[] | null
+          task_types: string[] | null
+          treasure_type: Database["public"]["Enums"]["treasure_types"] | null
+        }
+        Insert: {
+          created_at?: string
+          game_types?: string[] | null
+          id?: number
+          lesson_types?:
+            | Database["public"]["Enums"]["lesson_snippet_types"][]
+            | null
+          reward_types?: string[] | null
+          task_types?: string[] | null
+          treasure_type?: Database["public"]["Enums"]["treasure_types"] | null
+        }
+        Update: {
+          created_at?: string
+          game_types?: string[] | null
+          id?: number
+          lesson_types?:
+            | Database["public"]["Enums"]["lesson_snippet_types"][]
+            | null
+          reward_types?: string[] | null
+          task_types?: string[] | null
+          treasure_type?: Database["public"]["Enums"]["treasure_types"] | null
+        }
+        Relationships: []
+      }
       user_ai_updates: {
         Row: {
           ai_message_type: string | null
@@ -7464,6 +7539,13 @@ export type Database = {
       }
     }
     Functions: {
+      add_spouse_as_guardian: {
+        Args: {
+          spouse_id: string
+          child_id: string
+        }
+        Returns: undefined
+      }
       adjust_treasures: {
         Args: {
           user_id: string
@@ -7553,6 +7635,21 @@ export type Database = {
         }
         Returns: Json
       }
+      create_family_member: {
+        Args: {
+          parent_id: string
+          email: string
+          password: string
+          first_name?: string
+          last_name?: string
+          display_name?: string
+          is_child?: boolean
+          dob?: string
+          backup_email?: string
+          relationship_type?: string
+        }
+        Returns: string
+      }
       find_schedule_gaps: {
         Args: {
           p_user_id: string
@@ -7563,6 +7660,10 @@ export type Database = {
           gap_start: string
           gap_duration: number
         }[]
+      }
+      generate_secure_password: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       generate_weekly_emotional_summary: {
         Args: {
