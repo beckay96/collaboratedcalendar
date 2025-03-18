@@ -97,6 +97,7 @@ const CalendarGrid: React.FC = () => {
         const hasEvents = day.events.length > 0;
         const hasTasks = day.tasks.length > 0;
         const totalItems = day.events.length + day.tasks.length;
+        const itemsToShow = 2; // Max number of items to show before showing "more"
         
         // Get weather for this specific day
         const dayWeather = getWeatherForDate(day.date);
@@ -130,7 +131,7 @@ const CalendarGrid: React.FC = () => {
               
               {/* Event indicators with item type badges */}
               <div className="mt-auto w-full">
-                {day.events.slice(0, 2).map((event, eventIndex) => <div key={`event-${eventIndex}`} className={`event-tag text-[9px] flex items-center justify-between ${getEventCategoryColor(event.category)}`} onClick={e => handleEventClick(event, e)}>
+                {day.events.slice(0, itemsToShow).map((event, eventIndex) => <div key={`event-${eventIndex}`} className={`event-tag text-[9px] flex items-center justify-between ${getEventCategoryColor(event.category)}`} onClick={e => handleEventClick(event, e)}>
                     <div className="flex items-center overflow-hidden">
                       {event.emoji && <span className="mr-0.5 flex-shrink-0">{event.emoji}</span>}
                       <span className="truncate">{event.title}</span>
@@ -140,10 +141,12 @@ const CalendarGrid: React.FC = () => {
                       </span>}
                   </div>)}
                 
-                {/* Show remaining count if there are more events */}
-                {totalItems > 2 && <div className="text-[9px] text-center text-muted-foreground">
-                    +{totalItems - 2} more
-                  </div>}
+                {/* Show remaining count if there are more events - only if totalItems > itemsToShow */}
+                {totalItems > itemsToShow && (
+                  <div className="text-[9px] text-center text-muted-foreground">
+                    +{totalItems - itemsToShow} more
+                  </div>
+                )}
               </div>
             </div>;
       })}
