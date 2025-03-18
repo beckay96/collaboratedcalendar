@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { addHours, format, isSameDay, startOfDay } from 'date-fns';
 import { useCalendar } from '@/context/CalendarContext';
-import { getEventCategoryColor } from '@/utils/mock-data';
 import { Loader2, MapPin, RefreshCcw } from 'lucide-react';
 import { CalendarEvent } from '@/types/calendar';
 import ItemDetailModal from './ItemDetailModal';
@@ -16,7 +15,8 @@ const DayView: React.FC = () => {
     loading, 
     weatherData, 
     locationName,
-    refreshWeather
+    refreshWeather,
+    getEventCategoryColor
   } = useCalendar();
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);

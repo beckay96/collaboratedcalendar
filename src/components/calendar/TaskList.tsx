@@ -2,12 +2,11 @@
 import React, { useState } from 'react';
 import { useCalendar } from '@/context/CalendarContext';
 import { CheckCircle, Circle, Loader2, Plus } from 'lucide-react';
-import { getEventCategoryColor } from '@/utils/mock-data';
 import { CalendarTask, TaskStatus } from '@/types/calendar';
 import ItemDetailModal from './ItemDetailModal';
 
 const TaskList: React.FC = () => {
-  const { tasks, loading, updateTaskStatus } = useCalendar();
+  const { tasks, loading, updateTaskStatus, getEventCategoryColor } = useCalendar();
   const [filter, setFilter] = useState<'all' | 'me'>('me');
   const [selectedTask, setSelectedTask] = useState<CalendarTask | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -77,6 +76,7 @@ const TaskList: React.FC = () => {
               index={index}
               onToggle={() => handleTaskToggle(task.id, task.status || 'To Do')}
               onClick={() => handleTaskClick(task)}
+              getEventCategoryColor={getEventCategoryColor}
             />
           ))
         )}
@@ -101,9 +101,10 @@ interface TaskItemProps {
   index: number;
   onToggle: () => void;
   onClick: () => void;
+  getEventCategoryColor: (category: string) => string;
 }
 
-const TaskItem: React.FC<TaskItemProps> = ({ task, index, onToggle, onClick }) => {
+const TaskItem: React.FC<TaskItemProps> = ({ task, index, onToggle, onClick, getEventCategoryColor }) => {
   const isCompleted = task.status === 'Complete' || task.completed;
   
   return (

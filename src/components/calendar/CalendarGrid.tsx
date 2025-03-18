@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { format, isSameDay } from 'date-fns';
 import { useCalendar } from '@/context/CalendarContext';
 import { getCalendarDays, getWeekDaysNames } from '@/utils/calendar-utils';
-import { getEventCategoryColor } from '@/utils/mock-data';
 import { Loader2, MapPin } from 'lucide-react';
 import { CalendarEvent } from '@/types/calendar';
 import ItemDetailModal from './ItemDetailModal';
@@ -19,7 +18,8 @@ const CalendarGrid: React.FC = () => {
     loading,
     weatherData,
     multiDayWeatherData,
-    locationName
+    locationName,
+    getEventCategoryColor
   } = useCalendar();
   
   const calendarDays = getCalendarDays(currentDate, events, tasks);

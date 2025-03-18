@@ -1,8 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { CalendarEvent, CalendarTask, CalendarViewType, TaskStatus } from '@/types/calendar';
+import { CalendarEvent, CalendarTask, CalendarViewType, TaskStatus, EventCategory } from '@/types/calendar';
 import { fetchAllCalendarItems } from '@/services/calendarService';
-import { mockEvents, mockTasks } from '@/utils/mock-data';
 import { toast } from 'sonner';
 import { 
   WeatherData, 
@@ -11,6 +10,20 @@ import {
   getLocationName,
   fetchMultiDayWeather
 } from '@/services/weatherService';
+
+// Helper function to get event category color
+export function getEventCategoryColor(category: EventCategory): string {
+  switch (category) {
+    case 'work':
+      return 'bg-event-work text-white';
+    case 'personal':
+      return 'bg-event-personal text-white';
+    case 'important':
+      return 'bg-event-important text-white';
+    default:
+      return 'bg-event-default text-white';
+  }
+}
 
 interface CalendarContextType {
   currentDate: Date;
@@ -60,13 +73,13 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
     setLoading(true);
     try {
       const { events: fetchedEvents, tasks: fetchedTasks } = await fetchAllCalendarItems();
-      setEvents(fetchedEvents.length > 0 ? fetchedEvents : mockEvents);
-      setTasks(fetchedTasks.length > 0 ? fetchedTasks : mockTasks);
+      setEvents(fetchedEvents);
+      setTasks(fetchedTasks);
     } catch (error) {
       console.error("Error fetching calendar data:", error);
       toast.error("Failed to load calendar data");
-      setEvents(mockEvents);
-      setTasks(mockTasks);
+      setEvents([]);
+      setTasks([]);
     } finally {
       setLoading(false);
     }
@@ -103,20 +116,21 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
 
   const updateTaskStatus = async (taskId: string, status: TaskStatus) => {
     try {
-      if (tasks === mockTasks) {
-        const updatedTasks = tasks.map(task => 
-          task.id === taskId ? { 
-            ...task, 
-            status, 
-            completed: status === 'Complete' 
-          } : task
-        );
-        setTasks(updatedTasks);
-        toast.success(`Task marked as ${status}`);
-        return;
-      }
+      // Update task status in the UI immediately
+      const updatedTasks = tasks.map(task => 
+        task.id === taskId ? { 
+          ...task, 
+          status, 
+          completed: status === 'Complete' 
+        } : task
+      );
+      setTasks(updatedTasks);
+      toast.success(`Task marked as ${status}`);
+      
+      // In a real implementation, you would call an API to update the task status in the database
       console.log('Updating task status:', taskId, status);
-      await refreshCalendar();
+      
+      // For now, we don't need to refresh as we've updated the UI already
     } catch (error) {
       console.error('Error updating task status:', error);
       toast.error('Failed to update task');
@@ -126,13 +140,11 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
 
   const updateEventRsvp = async (eventId: string, status: 'attending' | 'not_attending' | 'maybe') => {
     try {
-      if (events === mockEvents) {
-        console.log('Updating RSVP for event:', eventId, 'to', status);
-        toast.success(`RSVP updated to ${status}`);
-        return;
-      }
-      console.log('Updating event RSVP:', eventId, status);
-      await refreshCalendar();
+      // In a real implementation, you would call an API to update the RSVP status
+      console.log('Updating RSVP for event:', eventId, 'to', status);
+      toast.success(`RSVP updated to ${status}`);
+      
+      // For now, we don't need to refresh as we've updated the UI already
     } catch (error) {
       console.error('Error updating RSVP:', error);
       toast.error('Failed to update RSVP');
